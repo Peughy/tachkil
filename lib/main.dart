@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tachkil/src/home_page.dart';
-import 'package:tachkil/utils/constant.dart';
+import 'package:tachkil/src/pages/home_page.dart';
+import 'package:tachkil/src/utils/constant.dart';
 
 void main() {
   runApp(const MyApp());
