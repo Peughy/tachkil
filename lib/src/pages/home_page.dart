@@ -3,6 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/action_button_model.dart';
 import 'package:tachkil/src/models/task_model.dart';
+import 'package:tachkil/src/pages/account_page.dart';
+import 'package:tachkil/src/pages/add_task_page.dart';
+import 'package:tachkil/src/pages/manage_task.dart';
+import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/widgets/action_button_widget.dart';
 import 'package:tachkil/src/widgets/task_widget.dart';
@@ -25,18 +29,31 @@ List<ActionButtonModel> actionButtonModels = [
 ];
 
 List<TaskModel> taskModels = [
-  TaskModel(title: "Un titre", time: DateTime(2025, 9, 23, 8, 30), statut: 0),
+  TaskModel(title: "Un titre", date: DateTime(2025, 9, 23, 8, 30), statut: 0),
   TaskModel(
     title: "Un titre 1",
-    time: DateTime(2025, 9, 23, 8, 30),
+    date: DateTime(2025, 9, 23, 8, 30),
     statut: -1,
   ),
-  TaskModel(title: "Un titre 2", time: DateTime(2025, 9, 23, 8, 30), statut: 1),
+  TaskModel(title: "Un titre 2", date: DateTime(2025, 9, 23, 8, 30), statut: 1),
 ];
+
+// this variable is used for filter the task with the search bar
+String filterTaskName = "";
+TextEditingController searchTaskController = TextEditingController();
 
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
+    List<TaskModel> taskModelsFiltered = (filterTaskName != "")
+        ? taskModels
+              .where(
+                (TaskModel taskModel) =>
+                    taskModel.title.contains(filterTaskName),
+              )
+              .toList()
+        : taskModels;
+
     return Scaffold(
       backgroundColor: whiteColor,
       appBar: AppBar(
@@ -68,26 +85,14 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               spacing: 12,
               children: [
-                Container(
+                IconButton(
                   padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    shape: BoxShape.circle,
-                  ),
-                  child: FaIcon(
+                  onPressed: () {
+                    navigatorBottomToTop(AccountPage(), context);
+                  },
+                  style: IconButton.styleFrom(backgroundColor: Colors.black12),
+                  icon: FaIcon(
                     FontAwesomeIcons.solidUser,
-                    size: 20,
-                    color: dartColor,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    shape: BoxShape.circle,
-                  ),
-                  child: FaIcon(
-                    FontAwesomeIcons.gear,
                     size: 20,
                     color: dartColor,
                   ),
@@ -99,7 +104,9 @@ class _HomePageState extends State<HomePage> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          navigatorBottomToTop(AddTaskPage(), context);
+        },
         backgroundColor: mainColor,
         child: FaIcon(FontAwesomeIcons.plus, size: 28, color: whiteColor),
       ),
@@ -108,6 +115,16 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           children: [
             TextFormField(
+              onChanged: (value) {
+                setState(() {
+                  filterTaskName = value;
+                });
+              },
+              controller: searchTaskController,
+              style: GoogleFonts.openSans(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 12),
                 fillColor: Colors.black12,
@@ -160,14 +177,58 @@ class _HomePageState extends State<HomePage> {
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: taskModels.length,
+              itemCount: taskModelsFiltered.length,
               itemBuilder: (context, index) {
                 // ignore: unnecessary_null_comparison
+                List<DateTime> dates = [];
+
+                for (TaskModel taskModel in taskModelsFiltered) {
+                  if (!dates.contains(taskModel.date)) {
+                    dates.add(taskModel.date);
+                  }
+                }
+
                 return (statutSelected == null ||
-                        statutSelected == taskModels[index].statut)
+                        statutSelected == taskModelsFiltered[index].statut)
                     ? Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: TaskWidget(taskModel: taskModels[index]),
+                        child: Column(
+                          children: [
+                            // Container(
+                            //   width: MediaQuery.of(context).size.width,
+                            //   margin: EdgeInsets.only(bottom: 18),
+                            //   padding: EdgeInsets.symmetric(
+                            //     horizontal: 18,
+                            //     vertical: 8,
+                            //   ),
+                            //   decoration: BoxDecoration(
+                            //     color: mainColor,
+                            //     borderRadius: BorderRadius.circular(8),
+                            //   ),
+                            //   child: Text(
+                            //     "${addZeros(taskModels[index].date.day)} ${displayMonth(taskModels[index].date.month)} ${taskModels[index].date.year}",
+                            //     style: GoogleFonts.openSans(
+                            //       fontSize: 18,
+                            //       color: whiteColor,
+                            //       fontWeight: FontWeight.bold,
+                            //     ),
+                            //   ),
+                            // ),
+                            GestureDetector(
+                              onTap: () {
+                                navigatorBottomToTop(
+                                  ManageTask(
+                                    taskModel: taskModelsFiltered[index],
+                                  ),
+                                  context,
+                                );
+                              },
+                              child: TaskWidget(
+                                taskModel: taskModelsFiltered[index],
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     : SizedBox.shrink();
               },

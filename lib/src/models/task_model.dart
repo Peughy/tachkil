@@ -2,12 +2,12 @@ class TaskModel {
   final String title;
   final String? description;
   final String? location;
-  final DateTime time;
+  final DateTime date;
   int statut;
 
   TaskModel({
     required this.title,
-    required this.time,
+    required this.date,
     this.description,
     this.location,
     required this.statut,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/task_model.dart';
+import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 
 class TaskWidget extends StatefulWidget {
@@ -13,28 +14,6 @@ class TaskWidget extends StatefulWidget {
 }
 
 class _TaskWidgetState extends State<TaskWidget> {
-  String addZeros(int nbr) {
-    return nbr < 10 ? '0$nbr' : "$nbr";
-  }
-
-  String displayMonth(int month) {
-    List<String> months = [
-      'Jan',
-      'Fev',
-      'Mar',
-      'Avr',
-      'Mai',
-      'Jui',
-      'Juil',
-      'Au',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return months[month - 1];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -54,10 +33,14 @@ class _TaskWidgetState extends State<TaskWidget> {
         spacing: 18,
         children: [
           GestureDetector(
-            onTap: (){
-              if(widget.taskModel.statut == 0){
+            onTap: () {
+              if (widget.taskModel.statut == 0) {
                 setState(() {
                   widget.taskModel.statut = 1;
+                });
+              } else if (widget.taskModel.statut == 1) {
+                setState(() {
+                  widget.taskModel.statut = 0;
                 });
               }
             },
@@ -87,7 +70,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                   ),
                 ),
                 Text(
-                  "${addZeros(widget.taskModel.time.day)} ${displayMonth(widget.taskModel.time.month)} ${widget.taskModel.time.year} ${addZeros(widget.taskModel.time.hour)}:${addZeros(widget.taskModel.time.minute)}",
+                  "${addZeros(widget.taskModel.date.day)} ${displayMonth(widget.taskModel.date.month)} ${widget.taskModel.date.year} ${addZeros(widget.taskModel.date.hour)}:${addZeros(widget.taskModel.date.minute)}",
                   style: GoogleFonts.openSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
