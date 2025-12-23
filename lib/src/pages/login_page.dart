@@ -1,9 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tachkil/src/models/user_model.dart';
+import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/pages/register_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
+import 'package:tachkil/src/utils/notifier.dart';
+import 'package:tachkil/src/utils/queries/users_queries.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,192 +26,271 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
 
+  late bool activeReminder;
+
+  @override
+  void initState() {
+    super.initState();
+    activeReminder = activeReminderNotifier.value;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: whiteColor,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Text(
-              "Connexion.",
-              style: GoogleFonts.anton(
-                fontSize: 36,
-                color: mainColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 24),
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Veuillez ajouter un nom d'utilisateur";
-                      }
-                      return null;
-                    },
-                    style: GoogleFonts.openSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    controller: usernameController,
-                    decoration: InputDecoration(
-                      errorStyle: GoogleFonts.openSans(
-                        color: Colors.red,
-                        fontSize: 16,
-                      ),
-                      fillColor: Colors.black12,
-                      filled: true,
-                      hint: Row(
-                        spacing: 12,
-                        children: [
-                          FaIcon(FontAwesomeIcons.solidUser, size: 20),
-                          Text(
-                            "Nom d'utilisateur",
-                            style: GoogleFonts.openSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.red, width: 1.5),
-                      ),
-                    ),
+    return ValueListenableBuilder(
+      valueListenable: activeDarkThemeNotifier,
+      builder: (context, activeDark, child) {
+        return Scaffold(
+          backgroundColor: activeDark ? dartColor : whiteColor,
+          body: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Text(
+                  "Connexion.",
+                  style: GoogleFonts.anton(
+                    fontSize: 36,
+                    color: mainColor,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 24),
-                  TextFormField(
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Veuillez ajouter un mot de passe";
-                      }
-                      return null;
-                    },
-                    style: GoogleFonts.openSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    controller: mdpController,
-                    obscureText: true,
-                    obscuringCharacter: '*',
-                    decoration: InputDecoration(
-                      errorStyle: GoogleFonts.openSans(
-                        color: Colors.red,
-                        fontSize: 16,
-                      ),
-                      fillColor: Colors.black12,
-                      filled: true,
-                      hint: Row(
-                        spacing: 12,
-                        children: [
-                          FaIcon(FontAwesomeIcons.lock, size: 22),
-                          Text(
-                            "Mot de passe",
-                            style: GoogleFonts.openSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w400,
-                            ),
+                ),
+                SizedBox(height: 24),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez ajouter un nom d'utilisateur";
+                          }
+                          return null;
+                        },
+                        style: GoogleFonts.openSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        controller: usernameController,
+                        decoration: InputDecoration(
+                          errorStyle: GoogleFonts.openSans(
+                            color: Colors.red,
+                            fontSize: 16,
                           ),
-                        ],
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: Colors.red, width: 1.5),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: mainColor,
-                        padding: EdgeInsets.all(12),
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          setState(() {
-                            isLoading = true;
-                          });
-                        }
-                      },
-                      child: isLoading
-                          ? Row(
-                              spacing: 12,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Chargement",
-                                  style: GoogleFonts.openSans(
-                                    color: whiteColor,
-                                    fontSize: 20,
-                                  ),
+                          fillColor: Colors.black12,
+                          filled: true,
+                          hint: Row(
+                            spacing: 12,
+                            children: [
+                              FaIcon(FontAwesomeIcons.solidUser, size: 20),
+                              Text(
+                                "Nom d'utilisateur",
+                                style: GoogleFonts.openSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                                Transform.scale(
-                                  scale: 0.5,
-                                  child: CircularProgressIndicator(
-                                    color: whiteColor,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              "Connexion",
-                              style: GoogleFonts.openSans(
-                                fontSize: 20,
-                                color: whiteColor,
-                                fontWeight: FontWeight.bold,
                               ),
+                            ],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: Colors.red,
+                              width: 1.5,
                             ),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () {
-                      navigatorBottomToTop(RegisterPage(), context);
-                    },
-                    child: Text(
-                      "Inscription",
-                      style: GoogleFonts.openSans(
-                        color: dartColor,
-                        fontSize: 18,
-                        decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(height: 24),
+                      TextFormField(
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Veuillez ajouter un mot de passe";
+                          }
+                          return null;
+                        },
+                        style: GoogleFonts.openSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        controller: mdpController,
+                        obscureText: true,
+                        obscuringCharacter: '*',
+                        decoration: InputDecoration(
+                          errorStyle: GoogleFonts.openSans(
+                            color: Colors.red,
+                            fontSize: 16,
+                          ),
+                          fillColor: Colors.black12,
+                          filled: true,
+                          hint: Row(
+                            spacing: 12,
+                            children: [
+                              FaIcon(FontAwesomeIcons.lock, size: 22),
+                              Text(
+                                "Mot de passe",
+                                style: GoogleFonts.openSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: Colors.red,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Checkbox(
+                            checkColor: whiteColor,
+                            activeColor: mainColor,
+                            value: activeReminder,
+                            onChanged: (value) {
+                              setState(() {
+                                activeReminder = value ?? false;
+                              });
+                              activeReminderNotifier.value = activeReminder;
+                            },
+                          ),
+                          Text(
+                            "Se souvenir de moi",
+                            style: GoogleFonts.openSans(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: mainColor,
+                            padding: EdgeInsets.all(12),
+                            elevation: 0,
+                          ),
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() {
+                                isLoading = true;
+                              });
+
+                              // find user data
+                              String username = usernameController.text;
+                              String password = mdpController.text;
+
+                              UsersQueries usersQueries = UsersQueries();
+
+                              try {
+                                UserModel userModel = await usersQueries.select(
+                                  username,
+                                  password,
+                                );
+
+                                if (activeReminder) {
+                                  SharedPreferences preferences =
+                                      await SharedPreferences.getInstance();
+                                  preferences.setBool("isReminder", true);
+                                  preferences.setBool("isConnected", true);
+                                  preferences.setInt(
+                                    "userId",
+                                    userModel.userId,
+                                  );
+                                }
+                                navigatorBottomToTop(HomePage(), context);
+                              } catch (e) {
+                                showMessage(
+                                  context,
+                                  "Identifiants incorrects, aucun compte touvé",
+                                  'e',
+                                );
+
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                debugPrint("[ERROR] $e");
+                              }
+                            }
+                          },
+                          child: isLoading
+                              ? Row(
+                                  spacing: 12,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Chargement",
+                                      style: GoogleFonts.openSans(
+                                        color: whiteColor,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                    Transform.scale(
+                                      scale: 0.5,
+                                      child: CircularProgressIndicator(
+                                        color: whiteColor,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Text(
+                                  "Connexion",
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 20,
+                                    color: whiteColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      TextButton(
+                        onPressed: () {
+                          navigatorBottomToTop(RegisterPage(), context);
+                        },
+                        child: Text(
+                          "Inscription",
+                          style: GoogleFonts.openSans(
+                            color: activeDark ? whiteColor : dartColor,
+                            fontSize: 18,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

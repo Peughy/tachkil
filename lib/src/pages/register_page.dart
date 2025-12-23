@@ -1,9 +1,17 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:tachkil/src/models/user_model.dart';
 import 'package:tachkil/src/pages/login_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
+import 'package:tachkil/src/utils/notifier.dart';
+import 'package:tachkil/src/utils/queries/users_queries.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -20,30 +28,38 @@ class _RegisterPageState extends State<RegisterPage> {
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
 
+  late bool activeDark;
+
+  @override
+  void initState() {
+    super.initState();
+    activeDark = activeDarkThemeNotifier.value;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: whiteColor,
+      backgroundColor: activeDark ? dartColor : whiteColor,
       body: Padding(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Text(
-              "Inscription.",
-              style: GoogleFonts.anton(
-                fontSize: 36,
-                color: mainColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 24),
-            Form(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
               key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
                 children: [
+                  Text(
+                    "Inscription.",
+                    style: GoogleFonts.anton(
+                      fontSize: 36,
+                      color: mainColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 24),
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -96,6 +112,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (value == null || value.isEmpty) {
                         return "Veuillez ajouter un mot de passe";
                       }
+                      if (value.length < 4) {
+                        return "Le mot de pase doit avoir au moins 4 caracters!";
+                      }
+                      if (value != confirmMdpController.text) {
+                        return "Les mots de passent de correspondent pas";
+                      }
                       return null;
                     },
                     style: GoogleFonts.openSans(
@@ -141,9 +163,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   SizedBox(height: 24),
                   TextFormField(
+                    enableInteractiveSelection: false,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Veuillez ajouter un mot de passe";
+                      }
+
+                      if (value != mdpController.text) {
+                        return "Les mots de passent de correspondent pas";
                       }
                       return null;
                     },
@@ -200,11 +227,54 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         elevation: 0,
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           setState(() {
                             isLoading = true;
                           });
+
+                          // random number generator
+                          final randGenerator = Random();
+
+                          // user informations
+                          int userId = randGenerator.nextInt(9999) + 1111;
+                          String username = usernameController.text;
+                          String password = mdpController.text;
+
+                          UserModel userModel = UserModel(
+                            userId: userId,
+                            username: username,
+                            password: password,
+                          );
+
+                          // Make queries to add user
+                          UsersQueries usersQueries = UsersQueries();
+
+                          try {
+                            await usersQueries.insert(userModel);
+                            showMessage(
+                              context,
+                              "L'utilisateur a bien été ajouté",
+                              's',
+                            );
+                            navigatorBottomToTop(LoginPage(), context);
+                          } on DatabaseException catch (e) {
+                            showMessage(context, "Le compte existe déjà", 'w');
+                            setState(() {
+                              isLoading = false;
+                            });
+                            debugPrint("[Error] $e");
+                          } catch (e) {
+                            showMessage(
+                              context,
+                              "Nous avons renconté une erreur",
+                              'e',
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            debugPrint("[Error] $e");
+                          }
                         }
                       },
                       child: isLoading
@@ -239,23 +309,26 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () {
-                      navigatorBottomToTop(LoginPage(), context);
-                    },
-                    child: Text(
-                      "Connexion",
-                      style: GoogleFonts.openSans(
-                        color: dartColor,
-                        fontSize: 18,
-                        decoration: TextDecoration.underline,
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        navigatorBottomToTop(LoginPage(), context);
+                      },
+                      child: Text(
+                        "Connexion",
+                        style: GoogleFonts.openSans(
+                          color: activeDark ? whiteColor : dartColor,
+                          fontSize: 18,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

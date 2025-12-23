@@ -31,4 +31,10 @@ class DatabaseHelper {
     _dbInstance ??= await _initDb();
     return _initDb();
   }
+
+  Future closeDb() async {
+    if (_dbInstance != null) {
+      await _dbInstance!.close();
+    }
+  }
 }

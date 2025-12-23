@@ -4,7 +4,16 @@
 
  */
 
+/*
+
+  For sharepreferences
+
+  activeReminderNotifier -> isReminder
+  connectedNotifier -> isConnected
+
+ */
+
 import 'package:flutter/material.dart';
 
-ValueNotifier<bool> activeDarkThemeNotifier = ValueNotifier(false); 
-ValueNotifier<bool> activeReminderNotifier = ValueNotifier(false); 
+ValueNotifier<bool> activeDarkThemeNotifier = ValueNotifier(true); 
+ValueNotifier<bool> activeReminderNotifier = ValueNotifier(true); 
