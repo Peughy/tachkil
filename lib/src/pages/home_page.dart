@@ -25,17 +25,28 @@ List<ActionButtonModel> actionButtonModels = [
   ActionButtonModel(text: "Toutes", isSelected: true, statut: null),
   ActionButtonModel(text: "En cours", isSelected: false, statut: 0),
   ActionButtonModel(text: "Retard", isSelected: false, statut: -1),
-  ActionButtonModel(text: "Termine", isSelected: false, statut: 1),
+  ActionButtonModel(text: "Terminer", isSelected: false, statut: 1),
 ];
 
 List<TaskModel> taskModels = [
-  TaskModel(title: "Un titre", date: DateTime(2025, 9, 23, 8, 30), statut: 0),
   TaskModel(
+    taskId: 129,
+    title: "Un titre",
+    date: DateTime(2025, 9, 23, 8, 30),
+    statut: 0,
+  ),
+  TaskModel(
+    taskId: 293,
     title: "Un titre 1",
     date: DateTime(2025, 9, 23, 8, 30),
     statut: -1,
   ),
-  TaskModel(title: "Un titre 2", date: DateTime(2025, 9, 23, 8, 30), statut: 1),
+  TaskModel(
+    taskId: 389,
+    title: "Un titre 2",
+    date: DateTime(2025, 9, 23, 8, 30),
+    statut: 1,
+  ),
 ];
 
 // this variable is used for filter the task with the search bar
