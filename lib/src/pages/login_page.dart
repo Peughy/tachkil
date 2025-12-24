@@ -220,21 +220,22 @@ class _LoginPageState extends State<LoginPage> {
                                   1,
                                 );
 
+                                SharedPreferences preferences =
+                                    await SharedPreferences.getInstance();
+
                                 // if the user not active the reminder case all the time he must connected
                                 if (activeReminder) {
-                                  SharedPreferences preferences =
-                                      await SharedPreferences.getInstance();
                                   preferences.setBool("isReminder", true);
-
-                                  // if reminder is active we stock the id user
-                                  preferences.setBool("isConnected", true);
-                                  preferences.setInt(
-                                    "userId",
-                                    userModel.userId,
-                                  );
-                                  userIdNotifier.value = userModel.userId;
+                                  activeReminderNotifier.value = true;
                                 }
-                              
+                                
+                                // partialy stock the information
+                                preferences.setBool("isConnected", true);
+                                preferences.setInt("userId", userModel.userId);
+                                userIdNotifier.value = userModel.userId;
+                                activeReminderNotifier.value = false;
+
+                                // redirect
                                 navigatorBottomToTop(HomePage(), context);
                               } catch (e) {
                                 showMessage(

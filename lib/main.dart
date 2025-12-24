@@ -13,14 +13,35 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   // get the connected statut stock with the sharedPreference
   Future<bool> getIfConnected() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool isConnected = preferences.getBool("isConnected") ?? false;
     return isConnected;
+  }
+
+
+  // when the user want to clove the app we verified if reminder is active
+  // if reminder is active -> do nothing
+  // else if reminder isn't active -> delete the id user ansd log information
+  @override
+  void dispose() async {
+    super.dispose();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    bool activeReminder = preferences.getBool("isReminder") ?? false;
+
+    if (activeReminder == false) {
+      preferences.remove("isConnected");
+      preferences.remove("userId");
+    }
   }
 
   @override
