@@ -4,8 +4,13 @@ import 'package:tachkil/src/models/action_button_model.dart';
 import 'package:tachkil/src/utils/constant.dart';
 
 class ActionButtonWidget extends StatelessWidget {
+  final bool activeDarkTheme;
   final ActionButtonModel actionButtonModel;
-  const ActionButtonWidget({super.key, required this.actionButtonModel});
+  const ActionButtonWidget({
+    super.key,
+    required this.actionButtonModel,
+    required this.activeDarkTheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +19,8 @@ class ActionButtonWidget extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: dartColor,
-          width: actionButtonModel.isSelected ? 1.5 : 1,
+          color: activeDarkTheme ? Colors.white24 : dartColor,
+          width: actionButtonModel.isSelected ? 1 : 1.5,
         ),
         color: actionButtonModel.isSelected
             ? Colors.red[200]
@@ -24,10 +29,17 @@ class ActionButtonWidget extends StatelessWidget {
       child: Text(
         actionButtonModel.text,
         style: GoogleFonts.openSans(
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: actionButtonModel.isSelected
               ? FontWeight.bold
               : FontWeight.normal,
+          color: activeDarkTheme
+              ? (actionButtonModel.isSelected)
+                    ? dartColor
+                    : whiteColor
+              : (actionButtonModel.isSelected)
+              ? whiteColor
+              : dartColor,
         ),
       ),
     );

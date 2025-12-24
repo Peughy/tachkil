@@ -206,22 +206,33 @@ class _LoginPageState extends State<LoginPage> {
 
                               UsersQueries usersQueries = UsersQueries();
 
+                              /*
+                                  for mode
+                                  1 -> for login by username and password
+                                  2 -> for select user by userId
+                              */
+
                               try {
                                 UserModel userModel = await usersQueries.select(
                                   username,
                                   password,
+                                  null,
+                                  1,
                                 );
 
+                                SharedPreferences preferences =
+                                    await SharedPreferences.getInstance();
+
+                                // if the case reminder is on, the save the user choice
                                 if (activeReminder) {
-                                  SharedPreferences preferences =
-                                      await SharedPreferences.getInstance();
                                   preferences.setBool("isReminder", true);
-                                  preferences.setBool("isConnected", true);
-                                  preferences.setInt(
-                                    "userId",
-                                    userModel.userId,
-                                  );
                                 }
+
+                                preferences.setBool("isConnected", true);
+                                preferences.setInt("userId", userModel.userId);
+                                userIdNotifier.value = userModel.userId;
+
+                                // redirect to home
                                 navigatorBottomToTop(HomePage(), context);
                               } catch (e) {
                                 showMessage(

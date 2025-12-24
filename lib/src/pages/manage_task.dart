@@ -1,11 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/task_model.dart';
+import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
+import 'package:tachkil/src/utils/queries/tasks_queries.dart';
 
 class ManageTask extends StatefulWidget {
   final TaskModel taskModel;
@@ -29,6 +33,8 @@ class _ManageTaskState extends State<ManageTask> {
   bool isEditable = false;
   bool isEditLoading = false;
   bool isFinishLoading = false;
+
+  TasksQueries tasksQueries = TasksQueries();
 
   @override
   void initState() {
@@ -232,6 +238,8 @@ class _ManageTaskState extends State<ManageTask> {
                                 onConfirm: (date) {
                                   setState(() {
                                     datetimeController = date;
+                                    dateTextController.text =
+                                        "${addZeros(datetimeController.day)} ${displayMonth(datetimeController.month)} ${datetimeController.year} ${addZeros(datetimeController.hour)}:${addZeros(datetimeController.minute)}";
                                   });
                                 },
                                 currentTime: DateTime.now(),
@@ -334,11 +342,51 @@ class _ManageTaskState extends State<ManageTask> {
                                   borderRadius: BorderRadius.circular(0),
                                 ),
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
                                   setState(() {
                                     isEditLoading = true;
                                   });
+
+                                  // initialiaze the data
+                                  String title = titleController.text;
+                                  String? description =
+                                      descriptionController.text;
+                                  String? location = locationController.text;
+
+                                  try {
+                                    TaskModel newTask = TaskModel(
+                                      taskId: widget.taskModel.taskId,
+                                      title: title,
+                                      description: description,
+                                      location: location,
+                                      date: datetimeController,
+                                      statut: 0,
+                                      userId: widget.taskModel.userId,
+                                    );
+
+                                    await tasksQueries.update(newTask);
+
+                                    showMessage(
+                                      context,
+                                      "La tache a bien été modifié",
+                                      's',
+                                    );
+
+                                    navigatorBottomToTop(HomePage(), context);
+                                  } catch (e) {
+                                    showMessage(
+                                      context,
+                                      "Nous avons rencontré une erreur",
+                                      'e',
+                                    );
+
+                                    setState(() {
+                                      isEditLoading = false;
+                                    });
+
+                                    debugPrint("[ERROR] $e");
+                                  }
                                 }
                               },
                               child: Column(
@@ -411,8 +459,8 @@ class _ManageTaskState extends State<ManageTask> {
                             ),
                           ),
 
-                          // if the task is end show de no finish button else show the finish button
-                          // if the task is late no display the finish btn
+                          // if the task is end (statut = 1) show de no finish button else (statut = 0) show the finish button
+                          // if the task is late (statut -1) no display the finish btn
                           (widget.taskModel.statut == -1)
                               ? SizedBox.shrink()
                               : Expanded(
@@ -427,16 +475,30 @@ class _ManageTaskState extends State<ManageTask> {
                                         borderRadius: BorderRadius.circular(0),
                                       ),
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        isFinishLoading = true;
+                                    onPressed: () async {
+                                      if (widget.taskModel.statut == 0) {
+                                        await tasksQueries.tooggleStatut(
+                                          widget.taskModel.taskId,
+                                          1,
+                                        );
 
-                                        if (widget.taskModel.statut == 0) {
-                                          widget.taskModel.statut == 1;
-                                        } else {
-                                          widget.taskModel.statut == 0;
-                                        }
-                                      });
+                                        // when the task is updated, user is redirect in the home page
+                                        navigatorBottomToTop(
+                                          HomePage(),
+                                          context,
+                                        );
+                                      } else {
+                                        await tasksQueries.tooggleStatut(
+                                          widget.taskModel.taskId,
+                                          0,
+                                        );
+
+                                        // when the task is updated, user is redirect in the home page
+                                        navigatorBottomToTop(
+                                          HomePage(),
+                                          context,
+                                        );
+                                      }
                                     },
                                     child: Column(
                                       spacing: 12,
@@ -485,7 +547,29 @@ class _ManageTaskState extends State<ManageTask> {
                                   borderRadius: BorderRadius.circular(0),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () async {
+                                try {
+                                  await tasksQueries.delete(
+                                    widget.taskModel.taskId,
+                                  );
+
+                                  showMessage(
+                                    context,
+                                    "La tache a bien été supprimé",
+                                    's',
+                                  );
+                  
+                                  navigatorBottomToTop(HomePage(), context);
+                                } catch (e) {
+                                  showMessage(
+                                    context,
+                                    "Nous avons rencontré une erreur",
+                                    'e',
+                                  );
+
+                                  debugPrint("[ERROR] $e");
+                                }
+                              },
                               child: Column(
                                 spacing: 12,
                                 crossAxisAlignment: CrossAxisAlignment.center,

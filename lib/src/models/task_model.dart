@@ -5,6 +5,7 @@ class TaskModel {
   final String? location;
   final DateTime date;
   int statut;
+  final int userId;
 
   TaskModel({
     required this.taskId,
@@ -13,6 +14,7 @@ class TaskModel {
     this.description,
     this.location,
     required this.statut,
+    required this.userId
   });
 
   // convert the TaskModel object in Map object
@@ -22,8 +24,11 @@ class TaskModel {
       "title": title,
       "description": description,
       "location": location,
+      "date": date.toString(),
       "statut": statut,
-      "date": date,
+      "userId": userId,
+    
+    
     };
   }
 }

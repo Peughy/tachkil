@@ -17,3 +17,4 @@ import 'package:flutter/material.dart';
 
 ValueNotifier<bool> activeDarkThemeNotifier = ValueNotifier(true); 
 ValueNotifier<bool> activeReminderNotifier = ValueNotifier(true); 
+ValueNotifier<int?> userIdNotifier = ValueNotifier(null);

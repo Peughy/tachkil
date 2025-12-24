@@ -4,16 +4,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/task_model.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
+import 'package:tachkil/src/utils/queries/tasks_queries.dart';
 
 class TaskWidget extends StatefulWidget {
   final TaskModel taskModel;
-  const TaskWidget({super.key, required this.taskModel});
+  final bool activeDarkTheme;
+  const TaskWidget({
+    super.key,
+    required this.taskModel,
+    required this.activeDarkTheme,
+  });
 
   @override
   State<TaskWidget> createState() => _TaskWidgetState();
 }
 
 class _TaskWidgetState extends State<TaskWidget> {
+  TasksQueries tasksQueries = TasksQueries();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,7 +29,13 @@ class _TaskWidgetState extends State<TaskWidget> {
       decoration: BoxDecoration(
         border: Border.all(
           width: 1,
-          color: widget.taskModel.statut == 1
+          color: widget.activeDarkTheme
+              ? widget.taskModel.statut == 1
+                    ? Colors.green
+                    : widget.taskModel.statut == 0
+                    ? whiteColor
+                    : mainColor
+              : widget.taskModel.statut == 1
               ? Colors.green
               : widget.taskModel.statut == 0
               ? dartColor
@@ -33,12 +47,16 @@ class _TaskWidgetState extends State<TaskWidget> {
         spacing: 18,
         children: [
           GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (widget.taskModel.statut == 0) {
+                // the statut is 1 when the task is complete
+                await tasksQueries.tooggleStatut(widget.taskModel.taskId, 1);
                 setState(() {
                   widget.taskModel.statut = 1;
                 });
               } else if (widget.taskModel.statut == 1) {
+                // the statut switch to 0 when the user cancel the task
+                await tasksQueries.tooggleStatut(widget.taskModel.taskId, 0);
                 setState(() {
                   widget.taskModel.statut = 0;
                 });
@@ -51,7 +69,13 @@ class _TaskWidgetState extends State<TaskWidget> {
                   ? FontAwesomeIcons.solidCircleXmark
                   : FontAwesomeIcons.solidCircleCheck,
               size: 24,
-              color: widget.taskModel.statut == 1
+              color: widget.activeDarkTheme
+                  ? widget.taskModel.statut == 1
+                        ? Colors.green
+                        : widget.taskModel.statut == 0
+                        ? whiteColor
+                        : mainColor
+                  : widget.taskModel.statut == 1
                   ? Colors.green
                   : widget.taskModel.statut == 0
                   ? dartColor

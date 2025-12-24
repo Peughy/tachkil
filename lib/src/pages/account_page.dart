@@ -1,10 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tachkil/src/models/user_model.dart';
 import 'package:tachkil/src/pages/delete_account_page.dart';
+import 'package:tachkil/src/pages/login_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
+import 'package:tachkil/src/utils/queries/users_queries.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({super.key});
@@ -14,40 +20,60 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  TextEditingController usernameController = TextEditingController(
-    text: "Junior Cyborg",
-  );
+  TextEditingController usernameController = TextEditingController();
   TextEditingController mdpController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  late bool activeReminder;
+  late int userId;
+
+  Future<UserModel> getUserInformations(int userId) async {
+    UsersQueries usersQueries = UsersQueries();
+    UserModel userModel = await usersQueries.select(null, null, userId, 2);
+    return userModel;
+  }
+
+  @override
+  void initState() {
+    activeReminder = activeReminderNotifier.value;
+    userId = userIdNotifier.value!;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: activeDarkThemeNotifier,
       builder: (context, activeDarkTheme, child) {
-        return ValueListenableBuilder(
-          valueListenable: activeReminderNotifier,
-          builder: (context, activeReminder, child) {
-            return Scaffold(
-              backgroundColor: activeDarkTheme ? dartColor : whiteColor,
-              appBar: AppBar(
-                surfaceTintColor: Colors.transparent,
-                backgroundColor: activeDarkTheme ? dartColor : whiteColor,
-                automaticallyImplyLeading: false,
-                leading: IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: FaIcon(
-                    FontAwesomeIcons.chevronLeft,
-                    size: 22,
-                    color: activeDarkTheme ? whiteColor : dartColor,
-                  ),
-                ),
+        return Scaffold(
+          backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+          appBar: AppBar(
+            surfaceTintColor: Colors.transparent,
+            backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+            automaticallyImplyLeading: false,
+            leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: FaIcon(
+                FontAwesomeIcons.chevronLeft,
+                size: 22,
+                color: activeDarkTheme ? whiteColor : dartColor,
               ),
-              body: Padding(
+            ),
+          ),
+          body: FutureBuilder(
+            future: getUserInformations(userId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return loadingWidget(activeDarkTheme);
+              }
+
+              UserModel userModel = snapshot.data!;
+              usernameController.text = userModel.username;
+
+              return Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 24,
@@ -170,51 +196,76 @@ class _AccountPageState extends State<AccountPage> {
                           ),
                           SizedBox(height: 24),
                           SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: mainColor,
-                        padding: EdgeInsets.all(12),
-                        elevation: 0,
-                      ),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          setState(() {
-                            isLoading = true;
-                          });
-                        }
-                      },
-                      child: isLoading
-                          ? Row(
-                              spacing: 12,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Chargement",
-                                  style: GoogleFonts.openSans(
-                                    color: whiteColor,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                                Transform.scale(
-                                  scale: 0.5,
-                                  child: CircularProgressIndicator(
-                                    color: whiteColor,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              "Modifer",
-                              style: GoogleFonts.openSans(
-                                fontSize: 20,
-                                color: whiteColor,
-                                fontWeight: FontWeight.bold,
+                            width: MediaQuery.of(context).size.width,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: mainColor,
+                                padding: EdgeInsets.all(12),
+                                elevation: 0,
                               ),
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate()) {
+                                  String username = usernameController.text;
+                                  String password = mdpController.text;
+                                  UsersQueries usersQueries = UsersQueries();
+                                  try {
+                                    await usersQueries.update(
+                                      userId,
+                                      username,
+                                      password,
+                                    );
+
+                                    showMessage(
+                                      context,
+                                      "Vos données ont bien été modifiées",
+                                      's',
+                                    );
+
+                                    navigatorBottomToTop(LoginPage(), context);
+                                  } catch (e) {
+                                    showMessage(
+                                      context,
+                                      "Nous avons rencontré une erreur",
+                                      'e',
+                                    );
+
+                                    debugPrint("[ERROR] $e");
+                                  }
+                                }
+                              },
+                              child: isLoading
+                                  ? Row(
+                                      spacing: 12,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Chargement",
+                                          style: GoogleFonts.openSans(
+                                            color: whiteColor,
+                                            fontSize: 20,
+                                          ),
+                                        ),
+                                        Transform.scale(
+                                          scale: 0.5,
+                                          child: CircularProgressIndicator(
+                                            color: whiteColor,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Text(
+                                      "Modifer",
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 20,
+                                        color: whiteColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
-                    ),
-                  ),
+                          ),
                         ],
                       ),
                     ),
@@ -293,7 +344,14 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                     SizedBox(height: 24),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        SharedPreferences preferences =
+                            await SharedPreferences.getInstance();
+                        preferences.remove("isConnected");
+                        preferences.remove("userId");
+
+                        navigatorBottomToTop(LoginPage(), context);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: activeDarkTheme
                             ? Colors.black12
@@ -343,9 +401,9 @@ class _AccountPageState extends State<AccountPage> {
                     ),
                   ],
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );

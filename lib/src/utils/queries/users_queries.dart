@@ -47,13 +47,27 @@ class UsersQueries {
   }
 
   // select the user
-  Future<UserModel> select(String username, String password) async {
+
+  /*
+
+  for mode
+  1 -> for login by username and password
+  2 -> for select user by userId
+
+  */
+
+  Future<UserModel> select(
+    String? username,
+    String? password,
+    int? userId,
+    int mode,
+  ) async {
     final db = await _dbHelper.getDBInstance();
 
     List<Map<String, Object?>> userMaps = await db.query(
       'users',
-      where: "username = ? and password = ?",
-      whereArgs: [username, password],
+      where: (mode == 1) ? "username = ? and password = ?" : "userId = ?",
+      whereArgs: (mode == 1) ? [username, password] : [userId],
     );
 
     _dbHelper.closeDb();
