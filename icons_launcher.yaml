@@ -1,5 +1,5 @@
 icons_launcher:
-  image_path: "assets/logo/logo-dart.png"
+  image_path: "assets/logo/logo-white-no-bg.png"
   platforms:
     android:
       enable: true
