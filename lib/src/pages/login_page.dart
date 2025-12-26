@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tachkil/src/models/user_model.dart';
+import 'package:tachkil/src/pages/forget_password_page.dart';
 import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/pages/register_page.dart';
 import 'package:tachkil/src/utils/common.dart';
@@ -38,9 +39,27 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: activeDarkThemeNotifier,
-      builder: (context, activeDark, child) {
+      builder: (context, activeDarkTheme, child) {
         return Scaffold(
-          backgroundColor: activeDark ? dartColor : whiteColor,
+          backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+          appBar: AppBar(
+            backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+            leading: AppBar(
+              surfaceTintColor: Colors.transparent,
+              backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+              automaticallyImplyLeading: false,
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: FaIcon(
+                  FontAwesomeIcons.chevronLeft,
+                  size: 22,
+                  color: activeDarkTheme ? whiteColor : dartColor,
+                ),
+              ),
+            ),
+          ),
           body: Padding(
             padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
             child: Column(
@@ -163,6 +182,23 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            navigatorBottomToTop(ForgetPasswordPage(), context);
+                          },
+                          child: Text(
+                            "Mot de passe oublié",
+                            style: GoogleFonts.openSans(
+                              color: activeDarkTheme ? whiteColor : dartColor,
+                              fontSize: 18,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
                       Row(
                         children: [
                           Checkbox(
@@ -228,7 +264,7 @@ class _LoginPageState extends State<LoginPage> {
                                   preferences.setBool("isReminder", true);
                                   activeReminderNotifier.value = true;
                                 }
-                                
+
                                 // partialy stock the information
                                 preferences.setBool("isConnected", true);
                                 preferences.setInt("userId", userModel.userId);
@@ -291,7 +327,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           "Inscription",
                           style: GoogleFonts.openSans(
-                            color: activeDark ? whiteColor : dartColor,
+                            color: activeDarkTheme ? whiteColor : dartColor,
                             fontSize: 18,
                             decoration: TextDecoration.underline,
                           ),

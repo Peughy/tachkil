@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tachkil/src/pages/home_page.dart';
-import 'package:tachkil/src/pages/login_page.dart';
+import 'package:tachkil/src/pages/welcome_page.dart';
 import 'package:tachkil/src/utils/common.dart';
-// import 'package:tachkil/src/pages/register_page.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
-// import 'package:tachkil/src/widgets/loading_widget.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,7 +66,7 @@ class _MyAppState extends State<MyApp> {
                     brightness: activeDark ? Brightness.dark : Brightness.light,
                     primaryColor: mainColor,
                   ),
-                  home: isConnected ? HomePage() : LoginPage(),
+                  home: isConnected ? HomePage() : WelcomePage(),
                 );
               },
             );

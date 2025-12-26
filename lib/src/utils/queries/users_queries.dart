@@ -53,6 +53,7 @@ class UsersQueries {
   for mode
   1 -> for login by username and password
   2 -> for select user by userId
+  3 -> for select by username
 
   */
 
@@ -66,8 +67,16 @@ class UsersQueries {
 
     List<Map<String, Object?>> userMaps = await db.query(
       'users',
-      where: (mode == 1) ? "username = ? and password = ?" : "userId = ?",
-      whereArgs: (mode == 1) ? [username, password] : [userId],
+      where: (mode == 1)
+          ? "username = ? and password = ?"
+          : (mode == 2)
+          ? "userId = ?"
+          : "username = ?",
+      whereArgs: (mode == 1)
+          ? [username, password]
+          : (mode == 2)
+          ? [userId]
+          : [username],
     );
 
     _dbHelper.closeDb();
