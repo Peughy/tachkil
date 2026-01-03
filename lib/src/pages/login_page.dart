@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   late bool activeReminder;
+  bool showPassword = false;
 
   @override
   void initState() {
@@ -142,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         controller: mdpController,
-                        obscureText: true,
+                        obscureText: !showPassword,
                         obscuringCharacter: '*',
                         decoration: InputDecoration(
                           errorStyle: GoogleFonts.openSans(
@@ -163,6 +164,20 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                             ],
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                showPassword = !showPassword;
+                              });
+                            },
+                            icon: FaIcon(
+                              showPassword
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 20,
+                              color: activeDarkTheme ? whiteColor : dartColor,
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
@@ -274,15 +289,29 @@ class _LoginPageState extends State<LoginPage> {
                                 // redirect
                                 navigatorBottomToTop(HomePage(), context);
                               } catch (e) {
-                                showMessage(
-                                  context,
-                                  "Identifiants incorrects, aucun compte touvé",
-                                  'e',
-                                );
+                                if (e.toString().contains(
+                                  "Null check operator",
+                                )) {
+                                  showMessage(
+                                    context,
+                                    "Identifiants incorrects, aucun compte touvé",
+                                    'w',
+                                  );
 
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                } else {
+                                  showMessage(
+                                    context,
+                                    "Une erreur est survenue, veuillez réessayer",
+                                    'e',
+                                  );
+
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
 
                                 debugPrint("[ERROR] $e");
                               }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/task_model.dart';
-import 'package:tachkil/src/utils/common.dart';
-import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/queries/tasks_queries.dart';
 
 class TaskWidget extends StatefulWidget {
@@ -24,80 +22,98 @@ class _TaskWidgetState extends State<TaskWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final Color leadingColor = Color(widget.taskModel.color);
+    String priorityText = widget.taskModel.priority == Priority.high
+        ? "Haute"
+        : widget.taskModel.priority == Priority.medium
+        ? "Moyenne"
+        : "Basse";
+
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 18),
+      height: 100,
       decoration: BoxDecoration(
-        border: Border.all(
-          width: 1,
-          color: widget.activeDarkTheme
-              ? widget.taskModel.statut == 1
-                    ? Colors.green
-                    : widget.taskModel.statut == 0
-                    ? whiteColor
-                    : mainColor
-              : widget.taskModel.statut == 1
-              ? Colors.green
-              : widget.taskModel.statut == 0
-              ? dartColor
-              : mainColor,
-        ),
         borderRadius: BorderRadius.circular(24),
+        color: widget.activeDarkTheme ? Colors.black12 : Colors.white38,
       ),
       child: Row(
-        spacing: 18,
+        mainAxisSize: MainAxisSize.max,
         children: [
-          GestureDetector(
-            onTap: () async {
-              if (widget.taskModel.statut == 0) {
-                // the statut is 1 when the task is complete
-                await tasksQueries.tooggleStatut(widget.taskModel.taskId, 1);
-                setState(() {
-                  widget.taskModel.statut = 1;
-                });
-              } else if (widget.taskModel.statut == 1) {
-                // the statut switch to 0 when the user cancel the task
-                await tasksQueries.tooggleStatut(widget.taskModel.taskId, 0);
-                setState(() {
-                  widget.taskModel.statut = 0;
-                });
-              }
-            },
-            child: FaIcon(
-              widget.taskModel.statut == 0
-                  ? FontAwesomeIcons.circle
-                  : widget.taskModel.statut == -1
-                  ? FontAwesomeIcons.solidCircleXmark
-                  : FontAwesomeIcons.solidCircleCheck,
-              size: 24,
-              color: widget.activeDarkTheme
-                  ? widget.taskModel.statut == 1
-                        ? Colors.green
-                        : widget.taskModel.statut == 0
-                        ? whiteColor
-                        : mainColor
-                  : widget.taskModel.statut == 1
-                  ? Colors.green
-                  : widget.taskModel.statut == 0
-                  ? dartColor
-                  : mainColor,
+          // leading color bar
+          Container(
+            height: 100,
+            width: 15,
+            // height: MediaQuery.of(context).size.height,
+            // height: double.maxFinite,
+            decoration: BoxDecoration(
+              color: leadingColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                bottomLeft: Radius.circular(24),
+              ),
             ),
           ),
+          SizedBox(width: 12),
+          // content
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.taskModel.title,
-                  style: GoogleFonts.openSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.taskModel.title,
+                    style: GoogleFonts.openSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                Text(
-                  "${addZeros(widget.taskModel.date.day)} ${displayMonth(widget.taskModel.date.month)} ${widget.taskModel.date.year} ${addZeros(widget.taskModel.date.hour)}:${addZeros(widget.taskModel.date.minute)}",
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: leadingColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      priorityText,
+                      style: GoogleFonts.openSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: leadingColor.computeLuminance() > 0.5
+                            ? Colors.black
+                            : Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // checkbox
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    if (widget.taskModel.statut == 0) {
+                      tasksQueries.tooggleStatut(widget.taskModel.taskId, 0);
+                      setState(() {
+                        widget.taskModel.statut = 1;
+                      });
+                    }
+                  },
+                  icon: Icon(
+                    widget.taskModel.statut == 1
+                        ? FontAwesomeIcons.solidCircleCheck
+                        : FontAwesomeIcons.circle,
+                    color: widget.taskModel.statut == 1
+                        ? Colors.green
+                        : Colors.grey,
                   ),
                 ),
               ],

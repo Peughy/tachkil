@@ -27,6 +27,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
+  bool showPassword = false;
+  bool showConfirmPassword = false;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         controller: mdpController,
-                        obscureText: true,
+                        obscureText: !showPassword,
                         obscuringCharacter: '*',
                         decoration: InputDecoration(
                           errorStyle: GoogleFonts.openSans(
@@ -159,6 +161,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                               ),
                             ],
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                showPassword = !showPassword;
+                              });
+                            },
+                            icon: FaIcon(
+                              showPassword
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 20,
+                              color: activeDarkTheme ? whiteColor : dartColor,
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
@@ -195,7 +211,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           fontWeight: FontWeight.w700,
                         ),
                         controller: confirmMdpController,
-                        obscureText: true,
+                        obscureText: !showConfirmPassword,
                         obscuringCharacter: '*',
                         decoration: InputDecoration(
                           errorStyle: GoogleFonts.openSans(
@@ -216,6 +232,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                               ),
                             ],
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                showConfirmPassword = !showConfirmPassword;
+                              });
+                            },
+                            icon: FaIcon(
+                              showConfirmPassword
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 20,
+                              color: activeDarkTheme ? whiteColor : dartColor,
+                            ),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
@@ -278,24 +308,26 @@ class _RegisterPageState extends State<RegisterPage> {
                                 );
                                 navigatorBottomToTop(LoginPage(), context);
                               } on DatabaseException catch (e) {
-                                showMessage(
-                                  context,
-                                  "Le compte existe déjà",
-                                  'w',
-                                );
-                                setState(() {
-                                  isLoading = false;
-                                });
-                                debugPrint("[Error] $e");
-                              } catch (e) {
-                                showMessage(
-                                  context,
-                                  "Nous avons renconté une erreur",
-                                  'e',
-                                );
-                                setState(() {
-                                  isLoading = false;
-                                });
+                                if (e.isUniqueConstraintError()) {
+                                  showMessage(
+                                    context,
+                                    "Le nom d'utilisateur existe déjà",
+                                    'w',
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  return;
+                                } else {
+                                  showMessage(
+                                    context,
+                                    "Nous avons renconté une erreur",
+                                    'e',
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
                                 debugPrint("[Error] $e");
                               }
                             }

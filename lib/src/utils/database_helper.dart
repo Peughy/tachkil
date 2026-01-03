@@ -12,8 +12,12 @@ class DatabaseHelper {
     );
 
     await db.execute(
-      "CREATE TABLE tasks(taskId INTEGER PRIMARY KEY, title TEXT UNIQUE, description TEXT NULL, location TEXT NULL, date TEXT, statut INTEGER DEFAULT 0, userId INTEGER, FOREIGN KEY(userId) REFERENCES users(userId))",
+      "CREATE TABLE tasks(taskId INTEGER PRIMARY KEY, title TEXT UNIQUE, description TEXT NULL, color INTEGER, priority INTEGER, statut INTEGER DEFAULT 0, date TEXT, userId INTEGER, FOREIGN KEY(userId) REFERENCES users(userId) ON DELETE CASCADE)",
     );
+
+    // await db.execute(
+    //   "CREATE TRIGGER updateStatut BEFORE SELECT ON tasks BEGIN UPDATE tasks SET tasks.statut = -1 WHERE datetime(date) < datetime(\"now\") END; END;",
+    // );
   }
 
   // initialize the db method

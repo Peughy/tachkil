@@ -3,7 +3,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
+import 'package:tachkil/src/models/priority_button_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sqflite/sqflite.dart';
@@ -13,6 +13,7 @@ import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
 import 'package:tachkil/src/utils/queries/tasks_queries.dart';
+import 'package:tachkil/src/widgets/priority_button_widget.dart';
 
 class AddTaskPage extends StatefulWidget {
   const AddTaskPage({super.key});
@@ -24,10 +25,29 @@ class AddTaskPage extends StatefulWidget {
 class _AddTaskPageState extends State<AddTaskPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  TextEditingController locationController = TextEditingController();
 
-  DateTime datetimeController = DateTime.now();
-  TextEditingController dateTextController = TextEditingController();
+  // Priority buttons
+  List<PriorityButtonModel> priorityButtons = [
+    PriorityButtonModel(
+      text: "Élevé",
+      isSelected: true,
+      priority: Priority.high,
+    ),
+    PriorityButtonModel(
+      text: "Moyenne",
+      isSelected: false,
+      priority: Priority.medium,
+    ),
+    PriorityButtonModel(
+      text: "Basse",
+      isSelected: false,
+      priority: Priority.low,
+    ),
+  ];
+
+  // selected color for task
+  Color selectedColor = Colors.blue;
+  Priority selectedPriority = Priority.high;
 
   bool isLoading = false;
   late int userId;
@@ -36,8 +56,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   void initState() {
-    dateTextController.text =
-        "${addZeros(datetimeController.day)} ${displayMonth(datetimeController.month)} ${datetimeController.year} ${addZeros(datetimeController.hour)}:${addZeros(datetimeController.minute)}";
     userId = userIdNotifier.value!;
     super.initState();
   }
@@ -159,106 +177,107 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         ),
                       ),
                       SizedBox(height: 18),
-                      TextFormField(
+                      Text(
+                        "Priorité",
                         style: GoogleFonts.openSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
-                        controller: locationController,
-                        decoration: InputDecoration(
-                          fillColor: Colors.black12,
-                          filled: true,
-                          hint: Row(
-                            spacing: 8,
-                            children: [
-                              FaIcon(FontAwesomeIcons.locationDot, size: 20),
-                              Text(
-                                "Lieu",
-                                style: GoogleFonts.openSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
+                      ),
+                      SizedBox(height: 8),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(priorityButtons.length, (
+                            idx,
+                          ) {
+                            return Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    for (var priorityButton
+                                        in priorityButtons) {
+                                      priorityButton.isSelected = false;
+                                    }
+                                    priorityButtons[idx].isSelected = true;
+                                    selectedPriority =
+                                        priorityButtons[idx].priority;
+                                  });
+                                },
+                                child: PriorityButtonWidget(
+                                  priorityButtonModel: priorityButtons[idx],
+                                  activeDarkTheme: activeDarkTheme,
                                 ),
                               ),
-                            ],
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
+                            );
+                          }),
                         ),
                       ),
-                      SizedBox(height: 18),
-                      TextFormField(
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Veuillez choisir une date";
-                          }
-                          return null;
-                        },
-                        style: GoogleFonts.openSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        controller: dateTextController,
-                        onTap: () {
-                          DatePicker.showDateTimePicker(
-                            context,
-                            showTitleActions: true,
-                            minTime: DateTime.now(),
-                            maxTime: DateTime(2030),
-                            onConfirm: (date) {
-                              setState(() {
-                                datetimeController = date;
-                                dateTextController.text =
-                                    "${addZeros(datetimeController.day)} ${displayMonth(datetimeController.month)} ${datetimeController.year} ${addZeros(datetimeController.hour)}:${addZeros(datetimeController.minute)}";
-                              });
-                            },
-                            currentTime: DateTime.now(),
-                            locale: LocaleType.fr,
-                          );
-                        },
-                        decoration: InputDecoration(
-                          errorStyle: GoogleFonts.openSans(
-                            color: Colors.red,
-                            fontSize: 16,
-                          ),
-                          fillColor: Colors.black12,
-                          filled: true,
-                          hint: Row(
-                            spacing: 8,
-                            children: [
-                              FaIcon(FontAwesomeIcons.calendar, size: 20),
-                              Text(
-                                "Date",
-                                style: GoogleFonts.openSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: Colors.red,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
+
                       SizedBox(height: 24),
+                      Text(
+                        "Couleur",
+                        style: GoogleFonts.openSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            [
+                              Colors.red,
+                              Colors.orange,
+                              Colors.amber,
+                              Colors.yellow,
+                              Colors.lime,
+                              Colors.green,
+                              Colors.lightGreen,
+                              Colors.teal,
+                              Colors.cyan,
+                              Colors.blue,
+                              Colors.lightBlue,
+                              Colors.indigo,
+                              Colors.indigoAccent,
+                              Colors.deepPurple,
+                              Colors.purple,
+                              Colors.pink,
+                              Colors.deepOrange,
+                              Colors.brown,
+                              Colors.grey,
+                              Colors.blueGrey,
+                            ].map((color) {
+                              final isSelected = color == selectedColor;
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedColor = color;
+                                  });
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: isSelected
+                                        ? Border.all(
+                                            color: activeDarkTheme
+                                                ? Colors.white
+                                                : Colors.black,
+                                            width: 5,
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                      SizedBox(height: 42),
                       SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: ElevatedButton(
@@ -273,10 +292,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                 isLoading = true;
                               });
 
-                              // initialiaze the data
+                              // initialize the data
                               String title = titleController.text;
                               String? description = descriptionController.text;
-                              String? location = locationController.text;
 
                               TasksQueries tasksQueries = TasksQueries();
 
@@ -290,8 +308,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                     taskId: taskId,
                                     title: title,
                                     description: description,
-                                    location: location,
-                                    date: datetimeController,
+                                    color: selectedColor.toARGB32(),
+                                    priority: selectedPriority,
+                                    date: DateTime.now(),
                                     statut: 0,
                                     userId: userId,
                                   ),
@@ -305,23 +324,21 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
                                 navigatorBottomToTop(HomePage(), context);
                               } on DatabaseException catch (e) {
-                                showMessage(
-                                  context,
-                                  "La tache existe déjà",
-                                  'e',
-                                );
-
-                                setState(() {
-                                  isLoading = false;
-                                });
-
-                                debugPrint("[ERROR] $e");
-                              } catch (e) {
-                                showMessage(
-                                  context,
-                                  "Nous avons rencontré une erreur",
-                                  'e',
-                                );
+                                if (e.toString().contains(
+                                  "UNIQUE constraint failed",
+                                )) {
+                                  showMessage(
+                                    context,
+                                    "La tache existe déjà",
+                                    'e',
+                                  );
+                                } else {
+                                  showMessage(
+                                    context,
+                                    "Nous avons rencontré une erreur",
+                                    'e',
+                                  );
+                                }
 
                                 setState(() {
                                   isLoading = false;

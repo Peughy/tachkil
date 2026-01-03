@@ -4,6 +4,24 @@ import 'package:tachkil/src/utils/database_helper.dart';
 class TasksQueries {
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  Priority getPriority(int numPriority) {
+    Priority priority = Priority.medium;
+
+    switch (numPriority) {
+      case 1000:
+        priority = Priority.high;
+        break;
+      case 100:
+        priority = Priority.medium;
+        break;
+      case 10:
+        priority = Priority.low;
+        break;
+    }
+
+    return priority;
+  }
+
   // add task
   Future<int> insert(TaskModel taskModel) async {
     final bd = await _dbHelper.getDBInstance();
@@ -29,9 +47,10 @@ class TasksQueries {
         TaskModel(
           taskId: taskMap["taskId"] as int,
           title: taskMap["title"] as String,
-          date: DateTime.parse(taskMap["date"] as String),
           description: taskMap["description"] as String,
-          location: taskMap["location"] as String,
+          color: taskMap["color"] as int,
+          priority: getPriority(taskMap["priority"] as int),
+          date: DateTime.parse(taskMap["date"] as String),
           statut: taskMap["statut"] as int,
           userId: taskMap["userId"] as int,
         ),

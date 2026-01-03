@@ -1,21 +1,27 @@
+
+enum Priority { high, medium, low }
+
 class TaskModel {
-  final int taskId;
-  final String title;
-  final String? description;
-  final String? location;
-  final DateTime date;
+  int taskId;
+  String title;
+  String? description;
+  int color;
+  Priority priority;
   int statut;
-  final int userId;
+  DateTime date;
+  int userId;
 
   TaskModel({
     required this.taskId,
     required this.title,
-    required this.date,
     this.description,
-    this.location,
+    required this.color,
+    required this.priority,
     required this.statut,
-    required this.userId
+    required this.date,
+    required this.userId,
   });
+
 
   // convert the TaskModel object in Map object
   Map<String, dynamic> toMap() {
@@ -23,13 +29,30 @@ class TaskModel {
       "taskId": taskId,
       "title": title,
       "description": description,
-      "location": location,
+      "color": color,
+      "priority": getPriorityNumber(priority),
       "date": date.toString(),
       "statut": statut,
       "userId": userId,
-    
-    
     };
+  }
+
+
+  int getPriorityNumber(Priority priority) {
+    int numPriority;
+    switch (priority) {
+      case Priority.high:
+        numPriority = 1000;
+        break;
+      case Priority.medium:
+        numPriority = 100;
+        break;
+      case Priority.low:
+        numPriority = 10;
+        break;
+    }
+
+    return numPriority;
   }
 }
 
@@ -43,4 +66,6 @@ statut
 1: finish
 
 */
+
+
 

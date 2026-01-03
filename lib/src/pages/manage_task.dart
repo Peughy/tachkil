@@ -1,15 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tachkil/src/models/priority_button_model.dart';
 import 'package:tachkil/src/models/task_model.dart';
 import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
 import 'package:tachkil/src/utils/queries/tasks_queries.dart';
+import 'package:tachkil/src/widgets/priority_button_widget.dart';
 
 class ManageTask extends StatefulWidget {
   final TaskModel taskModel;
@@ -22,10 +23,36 @@ class ManageTask extends StatefulWidget {
 class _ManageTaskState extends State<ManageTask> {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
-  TextEditingController locationController = TextEditingController();
 
-  late DateTime datetimeController;
-  TextEditingController dateTextController = TextEditingController();
+  List<Color> colorsLists = [
+    Colors.red,
+    Colors.orange,
+    Colors.amber,
+    Colors.yellow,
+    Colors.lime,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.teal,
+    Colors.cyan,
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.indigo,
+    Colors.indigoAccent,
+    Colors.deepPurple,
+    Colors.purple,
+    Colors.pink,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.grey,
+    Colors.blueGrey,
+  ];
+
+  // Priority buttons
+  late List<PriorityButtonModel> priorityButtons;
+
+  // selected color for task
+  late Color selectedColor;
+  late Priority selectedPriority;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -40,16 +67,34 @@ class _ManageTaskState extends State<ManageTask> {
   void initState() {
     super.initState();
     titleController.text = widget.taskModel.title;
-    datetimeController = widget.taskModel.date;
-    dateTextController.text =
-        "${addZeros(datetimeController.day)} ${displayMonth(datetimeController.month)} ${datetimeController.year} ${addZeros(datetimeController.hour)}:${addZeros(datetimeController.minute)}";
-
     if (widget.taskModel.description != null) {
       descriptionController.text = widget.taskModel.description!;
     }
 
-    if (widget.taskModel.location != null) {
-      locationController.text = widget.taskModel.location!;
+    selectedPriority = widget.taskModel.priority;
+    priorityButtons = [
+      PriorityButtonModel(
+        text: "Haute",
+        isSelected: widget.taskModel.priority == Priority.high ? true : false,
+        priority: Priority.high,
+      ),
+      PriorityButtonModel(
+        text: "Moyenne",
+        isSelected: widget.taskModel.priority == Priority.medium ? true : false,
+        priority: Priority.medium,
+      ),
+      PriorityButtonModel(
+        text: "Basse",
+        isSelected: widget.taskModel.priority == Priority.low ? true : false,
+        priority: Priority.low,
+      ),
+    ];
+
+    for (Color color in colorsLists) {
+      if (color.toARGB32() == widget.taskModel.color) {
+        selectedColor = color;
+        break;
+      }
     }
   }
 
@@ -149,8 +194,8 @@ class _ManageTaskState extends State<ManageTask> {
                               fontWeight: FontWeight.w700,
                             ),
                             controller: descriptionController,
-                            minLines: 3,
-                            maxLines: 5,
+                            minLines: isEditable ? 5 : 7,
+                            maxLines: 10,
                             decoration: InputDecoration(
                               fillColor: Colors.black12,
                               filled: true,
@@ -179,110 +224,90 @@ class _ManageTaskState extends State<ManageTask> {
                             ),
                           ),
                           SizedBox(height: 18),
-                          TextFormField(
-                            readOnly: isEditable ? false : true,
+                          Text(
+                            "Priorité",
                             style: GoogleFonts.openSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                            ),
-                            controller: locationController,
-                            decoration: InputDecoration(
-                              fillColor: Colors.black12,
-                              filled: true,
-                              hint: Row(
-                                spacing: 8,
-                                children: [
-                                  FaIcon(
-                                    FontAwesomeIcons.locationDot,
-                                    size: 20,
-                                  ),
-                                  Text(
-                                    "Lieu",
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
                             ),
                           ),
-                          SizedBox(height: 18),
-                          TextFormField(
-                            readOnly: isEditable ? false : true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Veuillez choisir une date";
-                              }
-                              return null;
-                            },
+                          SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: List.generate(priorityButtons.length, (
+                                idx,
+                              ) {
+                                return Padding(
+                                  padding: EdgeInsets.only(right: 8),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (isEditable) {
+                                        setState(() {
+                                          for (var priorityButton
+                                              in priorityButtons) {
+                                            priorityButton.isSelected = false;
+                                          }
+                                          priorityButtons[idx].isSelected =
+                                              true;
+                                          selectedPriority =
+                                              priorityButtons[idx].priority;
+                                        });
+                                      }
+                                    },
+                                    child: PriorityButtonWidget(
+                                      priorityButtonModel: priorityButtons[idx],
+                                      activeDarkTheme: activeDarkTheme,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+
+                          SizedBox(height: 24),
+                          Text(
+                            "Couleur",
                             style: GoogleFonts.openSans(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                             ),
-                            controller: dateTextController,
-                            onTap: () {
-                              DatePicker.showDateTimePicker(
-                                context,
-                                showTitleActions: true,
-                                minTime: DateTime.now(),
-                                maxTime: DateTime(2030),
-                                onConfirm: (date) {
+                          ),
+                          SizedBox(height: 8),
+
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: colorsLists.map((color) {
+                              final isSelected = color == selectedColor;
+                              return GestureDetector(
+                                onTap: () {
                                   setState(() {
-                                    datetimeController = date;
-                                    dateTextController.text =
-                                        "${addZeros(datetimeController.day)} ${displayMonth(datetimeController.month)} ${datetimeController.year} ${addZeros(datetimeController.hour)}:${addZeros(datetimeController.minute)}";
+                                    if (isEditable) {
+                                      selectedColor = color;
+                                    }
                                   });
                                 },
-                                currentTime: DateTime.now(),
-                                locale: LocaleType.fr,
-                              );
-                            },
-                            decoration: InputDecoration(
-                              errorStyle: GoogleFonts.openSans(
-                                color: Colors.red,
-                                fontSize: 16,
-                              ),
-                              fillColor: Colors.black12,
-                              filled: true,
-                              hint: Row(
-                                spacing: 8,
-                                children: [
-                                  FaIcon(FontAwesomeIcons.calendar, size: 20),
-                                  Text(
-                                    "Date",
-                                    style: GoogleFonts.openSans(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: isSelected
+                                        ? Border.all(
+                                            color: activeDarkTheme
+                                                ? Colors.white
+                                                : Colors.black,
+                                            width: 5,
+                                          )
+                                        : null,
                                   ),
-                                ],
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide(
-                                  color: Colors.red,
-                                  width: 1.5,
                                 ),
-                              ),
-                            ),
+                              );
+                            }).toList(),
                           ),
+                          SizedBox(height: 42),
                         ],
                       ),
                     ),
@@ -352,19 +377,18 @@ class _ManageTaskState extends State<ManageTask> {
                                   String title = titleController.text;
                                   String? description =
                                       descriptionController.text;
-                                  String? location = locationController.text;
 
                                   try {
                                     TaskModel newTask = TaskModel(
                                       taskId: widget.taskModel.taskId,
                                       title: title,
                                       description: description,
-                                      location: location,
-                                      date: datetimeController,
+                                      color: selectedColor.toARGB32(),
+                                      priority: selectedPriority,
+                                      date: DateTime.now(),
                                       statut: 0,
-                                      userId: widget.taskModel.userId,
+                                      userId: userId,
                                     );
-
                                     await tasksQueries.update(newTask);
 
                                     showMessage(
@@ -558,7 +582,7 @@ class _ManageTaskState extends State<ManageTask> {
                                     "La tache a bien été supprimé",
                                     's',
                                   );
-                  
+
                                   navigatorBottomToTop(HomePage(), context);
                                 } catch (e) {
                                   showMessage(

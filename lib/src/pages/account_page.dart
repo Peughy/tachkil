@@ -25,6 +25,7 @@ class _AccountPageState extends State<AccountPage> {
 
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false;
+  bool showPassword = false;
   late bool activeReminder;
   late int userId;
 
@@ -159,7 +160,7 @@ class _AccountPageState extends State<AccountPage> {
                               }
                               return null;
                             },
-                            obscureText: true,
+                            obscureText: !showPassword,
                             obscuringCharacter: '*',
                             controller: mdpController,
                             style: GoogleFonts.openSans(
@@ -182,6 +183,20 @@ class _AccountPageState extends State<AccountPage> {
                                 style: GoogleFonts.openSans(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    showPassword = !showPassword;
+                                  });
+                                },
+                                icon: FaIcon(
+                                  showPassword
+                                      ? FontAwesomeIcons.eyeSlash
+                                      : FontAwesomeIcons.eye,
+                                  size: 20,
+                                  color: activeDarkTheme ? whiteColor : dartColor,
                                 ),
                               ),
                               border: OutlineInputBorder(
