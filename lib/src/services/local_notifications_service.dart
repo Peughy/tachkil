@@ -24,27 +24,4 @@ class LocalNotificationsService {
 
     _notificationsPlugin.initialize(initializationSettings);
   }
-
-  // static void scheduleNotification(TaskModel taskModel) async {
-  //   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-  //     '2026',
-  //     'tachkil_channle',
-  //     importance: Importance.max,
-  //     priority: Priority.high,
-  //     ticker: 'ticker',
-  //   );
-  //   var iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-  //   var platformChannelSpecifics = NotificationDetails(
-  //     android: androidPlatformChannelSpecifics,
-  //     iOS: iOSPlatformChannelSpecifics,
-  //   );
-  //   await _notificationsPlugin.zonedSchedule(
-  //     taskModel.taskId,
-  //     taskModel.title,
-  //     'Commence dans 1 heure',
-  //     tz.TZDateTime.now(tz.).add(const Duration(seconds: 10)),
-  //     platformChannelSpecifics,
-  //     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-  //   );
-  // }
 }

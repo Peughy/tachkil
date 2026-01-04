@@ -14,7 +14,7 @@ Ce document résume les fichiers présents dans le dossier `lib/` et décrit rap
 
 **Fichier :** [lib/src/models/task_model.dart](lib/src/models/task_model.dart)
 - **Responsabilité :** Modèle tâche et utilitaires liés à la priorité.
-- **Symboles principaux :** `Priority` (enum : `hight`, `medium`, `low`), `TaskModel` (champs : `taskId`, `title`, `description?`, `color`, `priority`, `statut`, `date`, `userId`; méthodes : `toMap()`, `getPriorityNumber()`).
+- **Symboles principaux :** `Priority` (enum : `high`, `medium`, `low`), `TaskModel` (champs : `taskId`, `title`, `description?`, `color`, `priority`, `statut`, `date`, `userId`; méthodes : `toMap()`, `getPriorityNumber()`).
 - **Notes :** Valeurs de `statut` documentées dans le fichier (-1 = late, 0 = in progress, 1 = finish).
 
 **Fichier :** [lib/src/models/action_button_model.dart](lib/src/models/action_button_model.dart)
@@ -22,8 +22,8 @@ Ce document résume les fichiers présents dans le dossier `lib/` et décrit rap
 - **Symboles principaux :** `ActionButtonModel` (champs : `text`, `isSelected`, `statut`).
 
 **Fichier :** [lib/src/widgets/task_widget.dart](lib/src/widgets/task_widget.dart)
-- **Responsabilité :** Widget d'affichage d'une tâche (ligne UI avec icône, titre, date).
-- **Symboles principaux :** `TaskWidget` (StatefulWidget) — gère le basculement du statut via `TasksQueries.tooggleStatut()`.
+- **Responsabilité :** Widget d'affichage d'une tâche (ligne UI avec barre de couleur, titre, priorité, et bouton de statut).
+- **Symboles principaux :** `TaskWidget` (StatefulWidget) — gère l'affichage de la priorité avec opérateur ternaire (`"Haute"`, `"Moyenne"`, `"Basse"`) et le basculement du statut via `TasksQueries.tooggleStatut()`.
 
 **Fichier :** [lib/src/widgets/action_button_widget.dart](lib/src/widgets/action_button_widget.dart)
 - **Responsabilité :** Widget pour un bouton de filtrage (visuel, état sélectionné).
@@ -65,7 +65,7 @@ Ce document résume les fichiers présents dans le dossier `lib/` et décrit rap
 - [lib/src/pages/login_page.dart](lib/src/pages/login_page.dart) — `LoginPage` : formulaire de connexion, gestion du 'se souvenir de moi' et stockage `SharedPreferences`.
 - [lib/src/pages/register_page.dart](lib/src/pages/register_page.dart) — `RegisterPage` : formulaire d'inscription et insertion en base via `UsersQueries`.
 - [lib/src/pages/forget_password_page.dart](lib/src/pages/forget_password_page.dart) — `ForgetPasswordPage` : récupération / modification de mot de passe (recherche par username puis update).
-- [lib/src/pages/home_page.dart](lib/src/pages/home_page.dart) — `HomePage` : liste des tâches, recherche, filtres par statut, navigation vers `AddTaskPage`, `AccountPage`, `ManageTask`.
+- [lib/src/pages/home_page.dart](lib/src/pages/home_page.dart) — `HomePage` : liste des tâches groupées par date, recherche, filtres par statut, navigation vers `AddTaskPage`, `AccountPage`, `ManageTask`. Affichage d'un container noir avec la date en blanc au-dessus de chaque groupe de tâches.
 - [lib/src/pages/add_task_page.dart](lib/src/pages/add_task_page.dart) — `AddTaskPage` : formulaire d'ajout de tâche (génération `taskId` aléatoire, insertion via `TasksQueries`).
 - [lib/src/pages/manage_task.dart](lib/src/pages/manage_task.dart) — `ManageTask` : édition, suppression et marquage terminé/non terminé d'une tâche.
 - [lib/src/pages/account_page.dart](lib/src/pages/account_page.dart) — `AccountPage` : affichage et modification des infos utilisateur, paramètres (thème, rappel), déconnexion.
@@ -77,7 +77,7 @@ Remarques rapides et points d'attention
 - Plusieurs actions d'insertion/mise à jour vers la DB utilisent des IDs générés aléatoirement (`Random().nextInt(...)`) — attention aux collisions possibles.
 - Dans `DatabaseHelper._onCreate()` il y a des requêtes SQL et un trigger ; vérifier le SQL si des problèmes d'exécution apparaissent.
 - Certaines fonctionnalités (ex. scheduling de notifications, champs `location` dans `TaskModel`) sont commentées / partiellement implémentées.
+- Les tâches dans `HomePage` sont groupées par date (jour/mois/année) indépendamment de l'heure.
 
 ---
 
-Fichier généré automatiquement le: 2026-01-02

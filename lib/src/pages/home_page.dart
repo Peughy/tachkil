@@ -226,66 +226,74 @@ class _HomePageState extends State<HomePage> {
                               .toList()
                         : tasksModels;
 
+                    // Grouper les tâches par date
+                    Map<String, List<TaskModel>> groupedTasks = {};
+                    for (TaskModel task in taskModelsFiltered) {
+                      String dateKey =
+                          "${addZeros(task.date.day)} ${displayMonth(task.date.month)} ${task.date.year}";
+                      if (!groupedTasks.containsKey(dateKey)) {
+                        groupedTasks[dateKey] = [];
+                      }
+                      groupedTasks[dateKey]!.add(task);
+                    }
+
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: taskModelsFiltered.length,
-                      itemBuilder: (context, index) {
-                        // ignore: unnecessary_null_comparison
-                        // List<DateTime> dates = [];
+                      itemCount: groupedTasks.length,
+                      itemBuilder: (context, dateIndex) {
+                        String dateKey = groupedTasks.keys.elementAt(dateIndex);
+                        List<TaskModel> tasksForDate = groupedTasks[dateKey]!;
 
-                        // for (TaskModel taskModel in taskModelsFiltered) {
-                        //   if (!dates.contains(taskModel.date)) {
-                        //     dates.add(taskModel.date);
-                        //   }
-                        // }
-
-                        return (statutSelected == null ||
-                                statutSelected ==
-                                    taskModelsFiltered[index].statut)
-                            ? Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: Column(
-                                  children: [
-                                    // Container(
-                                    //   width: MediaQuery.of(context).size.width,
-                                    //   margin: EdgeInsets.only(bottom: 18),
-                                    //   padding: EdgeInsets.symmetric(
-                                    //     horizontal: 18,
-                                    //     vertical: 8,
-                                    //   ),
-                                    //   decoration: BoxDecoration(
-                                    //     color: mainColor,
-                                    //     borderRadius: BorderRadius.circular(8),
-                                    //   ),
-                                    //   child: Text(
-                                    //     "${addZeros(taskModels[index].date.day)} ${displayMonth(taskModels[index].date.month)} ${taskModels[index].date.year}",
-                                    //     style: GoogleFonts.openSans(
-                                    //       fontSize: 18,
-                                    //       color: whiteColor,
-                                    //       fontWeight: FontWeight.bold,
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        navigatorBottomToTop(
-                                          ManageTask(
-                                            taskModel:
-                                                taskModelsFiltered[index],
-                                          ),
-                                          context,
-                                        );
-                                      },
-                                      child: TaskWidget(
-                                        activeDarkTheme: activeDarkTheme,
-                                        taskModel: taskModelsFiltered[index],
-                                      ),
-                                    ),
-                                  ],
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Section date
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.only(bottom: 24),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 18,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                dateKey,
+                                style: GoogleFonts.openSans(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              )
-                            : SizedBox.shrink();
+                              ),
+                            ),
+                            // Tâches pour cette date
+                            ...tasksForDate.map((taskModel) {
+                              return (statutSelected == null ||
+                                      statutSelected == taskModel.statut)
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          navigatorBottomToTop(
+                                            ManageTask(taskModel: taskModel),
+                                            context,
+                                          );
+                                        },
+                                        child: TaskWidget(
+                                          activeDarkTheme: activeDarkTheme,
+                                          taskModel: taskModel,
+                                        ),
+                                      ),
+                                    )
+                                  : SizedBox.shrink();
+                            }),
+                          ],
+                        );
                       },
                     );
                   },
