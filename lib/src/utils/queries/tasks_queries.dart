@@ -39,7 +39,7 @@ class TasksQueries {
       "tasks",
       where: "userId = ?",
       whereArgs: [userId],
-      orderBy: "proiority DESC, statut ASC",
+      orderBy: "statut DESC, priority DESC, date ASC",
     );
 
     List<TaskModel> taskModels = [];

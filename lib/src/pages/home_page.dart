@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                   future: tasksQueries.select(userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox.shrink();
+                      return loadingWidget(activeDarkTheme);
                     }
 
                     List<TaskModel> tasksModels = snapshot.data!;
