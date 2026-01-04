@@ -311,10 +311,13 @@ class _AccountPageState extends State<AccountPage> {
                           inactiveThumbColor: dartColor,
                           inactiveTrackColor: whiteColor,
                           value: activeDarkTheme,
-                          onChanged: (value) {
+                          onChanged: (value) async {
                             setState(() {
                               activeDarkTheme = value;
                             });
+                            SharedPreferences preferences =
+                                await SharedPreferences.getInstance();
+                            preferences.setBool("isDarkTheme", activeDarkTheme);
                             activeDarkThemeNotifier.value = activeDarkTheme;
                           },
                         ),

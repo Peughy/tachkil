@@ -67,26 +67,40 @@ class _TaskWidgetState extends State<TaskWidget> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
-                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 8),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: leadingColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      priorityText,
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: leadingColor.computeLuminance() > 0.5
-                            ? Colors.black
-                            : Colors.white,
+                  Row(
+                    spacing: 12,
+                    children: [
+                      Text(
+                        "Priorités : ",
+                        style: GoogleFonts.openSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: leadingColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          priorityText,
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: leadingColor.computeLuminance() > 0.5
+                                ? Colors.black
+                                : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -101,7 +115,7 @@ class _TaskWidgetState extends State<TaskWidget> {
                 IconButton(
                   onPressed: () {
                     if (widget.taskModel.statut == 0) {
-                      tasksQueries.tooggleStatut(widget.taskModel.taskId, 0);
+                      tasksQueries.tooggleStatut(widget.taskModel.taskId, 1);
                       setState(() {
                         widget.taskModel.statut = 1;
                       });

@@ -143,6 +143,8 @@ class _ManageTaskState extends State<ManageTask> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
+                            maxLines: 3,
+                            minLines: 2,
                             readOnly: isEditable ? false : true,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -265,48 +267,55 @@ class _ManageTaskState extends State<ManageTask> {
                             ),
                           ),
 
-                          SizedBox(height: 24),
-                          Text(
-                            "Couleur",
-                            style: GoogleFonts.openSans(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(height: 8),
+                          isEditable
+                              ? Column(
+                                  children: [
+                                    SizedBox(height: 24),
+                                    Text(
+                                      "Couleur",
+                                      style: GoogleFonts.openSans(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
 
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: colorsLists.map((color) {
-                              final isSelected = color == selectedColor;
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    if (isEditable) {
-                                      selectedColor = color;
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    shape: BoxShape.circle,
-                                    border: isSelected
-                                        ? Border.all(
-                                            color: activeDarkTheme
-                                                ? Colors.white
-                                                : Colors.black,
-                                            width: 5,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: colorsLists.map((color) {
+                                        final isSelected =
+                                            color == selectedColor;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              if (isEditable) {
+                                                selectedColor = color;
+                                              }
+                                            });
+                                          },
+                                          child: Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              shape: BoxShape.circle,
+                                              border: isSelected
+                                                  ? Border.all(
+                                                      color: activeDarkTheme
+                                                          ? Colors.white
+                                                          : Colors.black,
+                                                      width: 5,
+                                                    )
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                )
+                              : SizedBox.shrink(),
                           SizedBox(height: 42),
                         ],
                       ),

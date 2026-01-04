@@ -33,6 +33,13 @@ class _MyAppState extends State<MyApp> {
     return isConnected;
   }
 
+  // get theme mode stock with the sharedPreference
+  Future<bool> getTheme() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    bool isDarkTheme = preferences.getBool("isDarkTheme") ?? false;
+    return isDarkTheme;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,28 +64,37 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: getIfConnected(),
+      future: getTheme(),
       builder: (context, snapshot) {
-        bool isConnected = snapshot.data ?? false;
-
+        bool activeDarkTheme = snapshot.data ?? false;
+        activeDarkThemeNotifier.value = activeDarkTheme;
         return FutureBuilder(
-          future: getUserId(),
+          future: getIfConnected(),
           builder: (context, snapshot) {
-            int? userId = snapshot.data;
-            if (userId != null) {
-              userIdNotifier.value = userId;
-            }
-            return ValueListenableBuilder(
-              valueListenable: activeDarkThemeNotifier,
-              builder: (context, activeDark, child) {
-                return MaterialApp(
-                  title: 'tachKil',
-                  debugShowCheckedModeBanner: false,
-                  theme: ThemeData(
-                    brightness: activeDark ? Brightness.dark : Brightness.light,
-                    primaryColor: mainColor,
-                  ),
-                  home: isConnected ? HomePage() : WelcomePage(),
+            bool isConnected = snapshot.data ?? false;
+
+            return FutureBuilder(
+              future: getUserId(),
+              builder: (context, snapshot) {
+                int? userId = snapshot.data;
+                if (userId != null) {
+                  userIdNotifier.value = userId;
+                }
+                return ValueListenableBuilder(
+                  valueListenable: activeDarkThemeNotifier,
+                  builder: (context, activeDark, child) {
+                    return MaterialApp(
+                      title: 'tachKil',
+                      debugShowCheckedModeBanner: false,
+                      theme: ThemeData(
+                        brightness: activeDark
+                            ? Brightness.dark
+                            : Brightness.light,
+                        primaryColor: mainColor,
+                      ),
+                      home: isConnected ? HomePage() : WelcomePage(),
+                    );
+                  },
                 );
               },
             );
