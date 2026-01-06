@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
                             : Brightness.light,
                         primaryColor: mainColor,
                       ),
-                      home: isConnected ? WelcomePage() : WelcomePage(),
+                      home: isConnected ? HomePage() : WelcomePage(),
                     );
                   },
                 );
