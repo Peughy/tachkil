@@ -17,7 +17,7 @@ class WelcomePage extends StatelessWidget {
         return Scaffold(
           backgroundColor: activeDarkTheme ? dartColor : whiteColor,
           body: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -54,7 +54,7 @@ class WelcomePage extends StatelessWidget {
                             "Connexion".toUpperCase(),
                             style: GoogleFonts.openSans(
                               fontSize: 22,
-                              color: whiteColor,
+                              color: activeDarkTheme ? dartColor :  whiteColor,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
