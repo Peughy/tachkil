@@ -35,9 +35,14 @@ class _AccountPageState extends State<AccountPage> {
     return userModel;
   }
 
+  Future<bool> getActiveReminder() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    bool isReminder = preferences.getBool("isReminder") ?? false;
+    return isReminder;
+  }
+
   @override
   void initState() {
-    activeReminder = activeReminderNotifier.value;
     userId = userIdNotifier.value!;
     super.initState();
   }
@@ -47,381 +52,404 @@ class _AccountPageState extends State<AccountPage> {
     return ValueListenableBuilder(
       valueListenable: activeDarkThemeNotifier,
       builder: (context, activeDarkTheme, child) {
-        return Scaffold(
-          backgroundColor: activeDarkTheme ? dartColor : whiteColor,
-          appBar: AppBar(
-            surfaceTintColor: Colors.transparent,
-            backgroundColor: activeDarkTheme ? dartColor : whiteColor,
-            automaticallyImplyLeading: false,
-            leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: FaIcon(
-                FontAwesomeIcons.chevronLeft,
-                size: 22,
-                color: activeDarkTheme ? whiteColor : dartColor,
-              ),
-            ),
-          ),
-          body: FutureBuilder(
-            future: getUserInformations(userId),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return loadingWidget(activeDarkTheme);
-              }
-
-              UserModel userModel = snapshot.data!;
-              usernameController.text = userModel.username;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 24,
+        return FutureBuilder(
+          future: getActiveReminder(),
+          builder: (context, snapshot) {
+            activeReminder = snapshot.data ?? false;
+            activeReminderNotifier.value = activeReminder;
+            return Scaffold(
+              backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+              appBar: AppBar(
+                surfaceTintColor: Colors.transparent,
+                backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+                automaticallyImplyLeading: false,
+                leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: FaIcon(
+                    FontAwesomeIcons.chevronLeft,
+                    size: 22,
+                    color: activeDarkTheme ? whiteColor : dartColor,
+                  ),
                 ),
-                child: ListView(
-                  children: [
-                    Text(
-                      "Mon compte",
-                      style: GoogleFonts.anton(
-                        color: mainColor,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 24),
+              ),
+              body: FutureBuilder(
+                future: getUserInformations(userId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return loadingWidget(activeDarkTheme);
+                  }
 
-                    SizedBox(height: 8),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Nom d'utilisateur",
-                            style: GoogleFonts.openSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
+                  if (snapshot.hasError || !snapshot.hasData) {
+                    return loadingWidget(activeDarkTheme);
+                  }
+
+                  UserModel userModel = snapshot.data!;
+                  usernameController.text = userModel.username;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 24,
+                    ),
+                    child: ListView(
+                      children: [
+                        Text(
+                          "Mon compte",
+                          style: GoogleFonts.anton(
+                            color: mainColor,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
                           ),
-                          TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Veuillez renseigner un nom d'utilisateur";
-                              }
-                              return null;
-                            },
-                            controller: usernameController,
-                            style: GoogleFonts.openSans(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              fillColor: Colors.black12,
-                              filled: true,
-                              hint: Text(
+                        ),
+                        SizedBox(height: 24),
+
+                        SizedBox(height: 8),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                                 "Nom d'utilisateur",
                                 style: GoogleFonts.openSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w400,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              errorStyle: GoogleFonts.openSans(
-                                fontSize: 16,
-                                color: Colors.red,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 24),
-                          Text(
-                            "Mot de passe",
-                            style: GoogleFonts.openSans(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return "Veuillez renseigner un mot de passe";
-                              }
-                              return null;
-                            },
-                            obscureText: !showPassword,
-                            obscuringCharacter: '*',
-                            controller: mdpController,
-                            style: GoogleFonts.openSans(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            decoration: InputDecoration(
-                              errorStyle: GoogleFonts.openSans(
-                                fontSize: 16,
-                                color: Colors.red,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              fillColor: Colors.black12,
-                              filled: true,
-                              hint: Text(
-                                "Mot de passe",
+                              TextFormField(
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Veuillez renseigner un nom d'utilisateur";
+                                  }
+                                  return null;
+                                },
+                                controller: usernameController,
                                 style: GoogleFonts.openSans(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w400,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                              suffixIcon: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    showPassword = !showPassword;
-                                  });
-                                },
-                                icon: FaIcon(
-                                  showPassword
-                                      ? FontAwesomeIcons.eyeSlash
-                                      : FontAwesomeIcons.eye,
-                                  size: 20,
-                                  color: activeDarkTheme ? whiteColor : dartColor,
-                                ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 24),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: mainColor,
-                                padding: EdgeInsets.all(12),
-                                elevation: 0,
-                              ),
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  String username = usernameController.text;
-                                  String password = mdpController.text;
-                                  UsersQueries usersQueries = UsersQueries();
-                                  try {
-                                    await usersQueries.update(
-                                      userId,
-                                      username,
-                                      password,
-                                    );
-
-                                    showMessage(
-                                      context,
-                                      "Vos données ont bien été modifiées",
-                                      's',
-                                    );
-
-                                    navigatorBottomToTop(LoginPage(), context);
-                                  } catch (e) {
-                                    showMessage(
-                                      context,
-                                      "Nous avons rencontré une erreur",
-                                      'e',
-                                    );
-
-                                    debugPrint("[ERROR] $e");
-                                  }
-                                }
-                              },
-                              child: isLoading
-                                  ? Row(
-                                      spacing: 12,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "Chargement",
-                                          style: GoogleFonts.openSans(
-                                            color: whiteColor,
-                                            fontSize: 20,
-                                          ),
-                                        ),
-                                        Transform.scale(
-                                          scale: 0.5,
-                                          child: CircularProgressIndicator(
-                                            color: whiteColor,
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : Text(
-                                      "Modifer",
-                                      style: GoogleFonts.openSans(
-                                        fontSize: 20,
-                                        color: whiteColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  fillColor: Colors.black12,
+                                  filled: true,
+                                  hint: Text(
+                                    "Nom d'utilisateur",
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
                                     ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 48),
-                    Text(
-                      "Paramétres",
-                      style: GoogleFonts.anton(
-                        color: mainColor,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Thème sombre",
-                          style: GoogleFonts.openSans(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
+                                  ),
+                                  errorStyle: GoogleFonts.openSans(
+                                    fontSize: 16,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 24),
+                              Text(
+                                "Mot de passe",
+                                style: GoogleFonts.openSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              TextFormField(
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Veuillez renseigner un mot de passe";
+                                  }
+                                  return null;
+                                },
+                                obscureText: !showPassword,
+                                obscuringCharacter: '*',
+                                controller: mdpController,
+                                style: GoogleFonts.openSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                decoration: InputDecoration(
+                                  errorStyle: GoogleFonts.openSans(
+                                    fontSize: 16,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  fillColor: Colors.black12,
+                                  filled: true,
+                                  hint: Text(
+                                    "Mot de passe",
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showPassword = !showPassword;
+                                      });
+                                    },
+                                    icon: FaIcon(
+                                      showPassword
+                                          ? FontAwesomeIcons.eyeSlash
+                                          : FontAwesomeIcons.eye,
+                                      size: 20,
+                                      color: activeDarkTheme
+                                          ? whiteColor
+                                          : dartColor,
+                                    ),
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 24),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: mainColor,
+                                    padding: EdgeInsets.all(12),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () async {
+                                    if (_formKey.currentState!.validate()) {
+                                      String username = usernameController.text;
+                                      String password = mdpController.text;
+                                      UsersQueries usersQueries =
+                                          UsersQueries();
+                                      try {
+                                        await usersQueries.update(
+                                          userId,
+                                          username,
+                                          password,
+                                        );
+
+                                        showMessage(
+                                          context,
+                                          "Vos données ont bien été modifiées",
+                                          's',
+                                        );
+
+                                        navigatorRemplacementBottomToTop(
+                                          LoginPage(),
+                                          context,
+                                        );
+                                      } catch (e) {
+                                        showMessage(
+                                          context,
+                                          "Nous avons rencontré une erreur",
+                                          'e',
+                                        );
+
+                                        debugPrint("[ERROR] $e");
+                                      }
+                                    }
+                                  },
+                                  child: isLoading
+                                      ? Row(
+                                          spacing: 12,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              "Chargement",
+                                              style: GoogleFonts.openSans(
+                                                color: whiteColor,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                            Transform.scale(
+                                              scale: 0.5,
+                                              child: CircularProgressIndicator(
+                                                color: whiteColor,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Text(
+                                          "Modifer",
+                                          style: GoogleFonts.openSans(
+                                            fontSize: 20,
+                                            color: whiteColor,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Switch(
-                          activeThumbColor: whiteColor,
-                          activeTrackColor: mainColor,
-                          inactiveThumbColor: dartColor,
-                          inactiveTrackColor: whiteColor,
-                          value: activeDarkTheme,
-                          onChanged: (value) async {
-                            setState(() {
-                              activeDarkTheme = value;
-                            });
+                        SizedBox(height: 48),
+                        Text(
+                          "Paramétres",
+                          style: GoogleFonts.anton(
+                            color: mainColor,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Thème sombre",
+                              style: GoogleFonts.openSans(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Switch(
+                              activeThumbColor: whiteColor,
+                              activeTrackColor: mainColor,
+                              inactiveThumbColor: dartColor,
+                              inactiveTrackColor: whiteColor,
+                              value: activeDarkTheme,
+                              onChanged: (value) async {
+                                setState(() {
+                                  activeDarkTheme = value;
+                                });
+                                SharedPreferences preferences =
+                                    await SharedPreferences.getInstance();
+                                preferences.setBool(
+                                  "isDarkTheme",
+                                  activeDarkTheme,
+                                );
+                                activeDarkThemeNotifier.value = activeDarkTheme;
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Se souvenir de moi",
+                              style: GoogleFonts.openSans(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            Switch(
+                              activeThumbColor: whiteColor,
+                              activeTrackColor: mainColor,
+                              inactiveThumbColor: activeDarkTheme
+                                  ? whiteColor
+                                  : dartColor,
+                              inactiveTrackColor: activeDarkTheme
+                                  ? Colors.black12
+                                  : whiteColor,
+                              value: activeReminder,
+                              onChanged: (value) {
+                                setState(() {
+                                  activeReminder = value;
+                                });
+                                activeReminderNotifier.value = activeReminder;
+                              },
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 24),
+                        Divider(
+                          thickness: 5,
+                          radius: BorderRadius.circular(24),
+                          color: mainColor,
+                        ),
+                        SizedBox(height: 24),
+                        TextButton(
+                          onPressed: () async {
                             SharedPreferences preferences =
                                 await SharedPreferences.getInstance();
-                            preferences.setBool("isDarkTheme", activeDarkTheme);
-                            activeDarkThemeNotifier.value = activeDarkTheme;
+                            preferences.remove("isConnected");
+                            preferences.remove("userId");
+
+                            navigatorBottomToTop(LoginPage(), context);
                           },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Se souvenir de moi",
-                          style: GoogleFonts.openSans(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w400,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: activeDarkTheme
+                                ? Colors.black12
+                                : dartColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(24),
+                            ),
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: Text(
+                            "DECONNEXION",
+                            style: GoogleFonts.openSans(
+                              fontSize: 20,
+                              color: whiteColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        Switch(
-                          activeThumbColor: whiteColor,
-                          activeTrackColor: mainColor,
-                          inactiveThumbColor: activeDarkTheme
-                              ? whiteColor
-                              : dartColor,
-                          inactiveTrackColor: activeDarkTheme
-                              ? Colors.black12
-                              : whiteColor,
-                          value: activeReminder,
-                          onChanged: (value) {
-                            setState(() {
-                              activeReminder = value;
-                            });
-                            activeReminderNotifier.value = activeReminder;
+                        SizedBox(height: 24),
+                        TextButton(
+                          onPressed: () {
+                            navigatorBottomToTop(
+                              DeleteAccountPage(userModel: userModel),
+                              context,
+                            );
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[100],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(24),
+                            ),
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: Text(
+                            "SUPPRIMER LE COMPTE",
+                            style: GoogleFonts.openSans(
+                              fontSize: 20,
+                              color: mainColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 24),
-                    Divider(
-                      thickness: 5,
-                      radius: BorderRadius.circular(24),
-                      color: mainColor,
-                    ),
-                    SizedBox(height: 24),
-                    TextButton(
-                      onPressed: () async {
-                        SharedPreferences preferences =
-                            await SharedPreferences.getInstance();
-                        preferences.remove("isConnected");
-                        preferences.remove("userId");
-
-                        navigatorBottomToTop(LoginPage(), context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: activeDarkTheme
-                            ? Colors.black12
-                            : dartColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(24),
-                        ),
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: Text(
-                        "DECONNEXION",
-                        style: GoogleFonts.openSans(
-                          fontSize: 20,
-                          color: whiteColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    TextButton(
-                      onPressed: () {
-                        navigatorBottomToTop(DeleteAccountPage(), context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[100],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(24),
-                        ),
-                        elevation: 0,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: Text(
-                        "SUPPRIMER LE COMPTE",
-                        style: GoogleFonts.openSans(
-                          fontSize: 20,
-                          color: mainColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            );
+          },
         );
       },
     );

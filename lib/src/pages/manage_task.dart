@@ -172,11 +172,15 @@ class _ManageTaskState extends State<ManageTask> {
                                 ),
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: isEditable
+                                    ? BorderRadius.circular(24)
+                                    : BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: isEditable
+                                    ? BorderRadius.circular(24)
+                                    : BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
                               ),
                               errorBorder: OutlineInputBorder(
@@ -196,8 +200,8 @@ class _ManageTaskState extends State<ManageTask> {
                               fontWeight: FontWeight.w700,
                             ),
                             controller: descriptionController,
-                            minLines: isEditable ? 5 : 7,
-                            maxLines: 10,
+                            minLines: isEditable ? 8 : 12,
+                            maxLines: 15,
                             decoration: InputDecoration(
                               fillColor: Colors.black12,
                               filled: true,
@@ -209,15 +213,21 @@ class _ManageTaskState extends State<ManageTask> {
                                 ),
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: isEditable
+                                    ? BorderRadius.circular(24)
+                                    : BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: isEditable
+                                    ? BorderRadius.circular(24)
+                                    : BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
                               ),
                               errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: isEditable
+                                    ? BorderRadius.circular(24)
+                                    : BorderRadius.circular(8),
                                 borderSide: BorderSide(
                                   color: Colors.red,
                                   width: 1.5,
@@ -394,8 +404,8 @@ class _ManageTaskState extends State<ManageTask> {
                                       description: description,
                                       color: selectedColor.toARGB32(),
                                       priority: selectedPriority,
-                                      date: DateTime.now(),
-                                      statut: 0,
+                                      date: widget.taskModel.date,
+                                      statut: widget.taskModel.statut,
                                       userId: userId,
                                     );
                                     await tasksQueries.update(newTask);

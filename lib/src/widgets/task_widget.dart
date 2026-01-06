@@ -30,25 +30,29 @@ class _TaskWidgetState extends State<TaskWidget> {
         : "Basse";
 
     return Container(
-      height: 100,
+      height: 120,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         color: widget.activeDarkTheme ? Colors.black12 : Colors.white38,
+        border: Border.all(
+          color: leadingColor,
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         children: [
           // leading color bar
           Container(
-            height: 100,
-            width: 15,
+            height: 120,
+            width: 20,
             // height: MediaQuery.of(context).size.height,
             // height: double.maxFinite,
             decoration: BoxDecoration(
               color: leadingColor,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                bottomLeft: Radius.circular(24),
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
               ),
             ),
           ),

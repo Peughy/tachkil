@@ -98,6 +98,8 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextFormField(
+                        maxLines: 3,
+                        minLines: 2,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Veuillez ajouter un titre";
@@ -142,13 +144,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       ),
                       SizedBox(height: 18),
                       TextFormField(
+                        minLines: 10,
+                        maxLines: 15,
                         style: GoogleFonts.openSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
                         controller: descriptionController,
-                        minLines: 3,
-                        maxLines: 5,
                         decoration: InputDecoration(
                           fillColor: Colors.black12,
                           filled: true,
@@ -322,7 +324,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   's',
                                 );
 
-                                navigatorBottomToTop(HomePage(), context);
+                                navigatorRemplacementBottomToTop(HomePage(), context);
                               } on DatabaseException catch (e) {
                                 if (e.toString().contains(
                                   "UNIQUE constraint failed",

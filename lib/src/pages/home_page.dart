@@ -25,9 +25,9 @@ int? statutSelected;
 late int userId;
 
 List<ActionButtonModel> actionButtonModels = [
-  ActionButtonModel(text: "Toutes", isSelected: true, statut: null),
-  ActionButtonModel(text: "En cours", isSelected: false, statut: 0),
-  ActionButtonModel(text: "Retard", isSelected: false, statut: -1),
+  ActionButtonModel(text: "Toutes", isSelected: false, statut: null),
+  ActionButtonModel(text: "En cours", isSelected: true, statut: 0),
+  // ActionButtonModel(text: "Retard", isSelected: false, statut: -1),
   ActionButtonModel(text: "Terminés", isSelected: false, statut: 1),
 ];
 
@@ -172,6 +172,10 @@ class _HomePageState extends State<HomePage> {
                   future: tasksQueries.select(userId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
+                      return loadingWidget(activeDarkTheme);
+                    }
+
+                    if (snapshot.hasError || !snapshot.hasData) {
                       return loadingWidget(activeDarkTheme);
                     }
 

@@ -20,7 +20,7 @@ class WelcomePage extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image(
@@ -31,66 +31,60 @@ class WelcomePage extends StatelessWidget {
                     ),
                     width: 250,
                   ),
-                  SizedBox(height: 48),
-                  Container(
-                    width: 100,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: activeDarkTheme ? whiteColor : dartColor,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  SizedBox(height: 48),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        navigatorBottomToTop(LoginPage(), context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.all(12),
-                        backgroundColor: mainColor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(24),
+                  Column(
+                    spacing: 18,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            navigatorBottomToTop(LoginPage(), context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(12),
+                            backgroundColor: activeDarkTheme
+                                ? whiteColor
+                                : dartColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "Connexion".toUpperCase(),
+                            style: GoogleFonts.openSans(
+                              fontSize: 22,
+                              color: whiteColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        "Connexion",
-                        style: GoogleFonts.openSans(
-                          fontSize: 20,
-                          color: whiteColor,
-                          fontWeight: FontWeight.w700,
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            navigatorBottomToTop(RegisterPage(), context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.all(12),
+                            backgroundColor: mainColor,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "Inscription".toUpperCase(),
+                            style: GoogleFonts.openSans(
+                              fontSize: 22,
+                              color: whiteColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.all(12),
-                        backgroundColor: activeDarkTheme
-                            ? whiteColor
-                            : dartColor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(24),
-                        ),
-                      ),
-                      onPressed: () {
-                        navigatorBottomToTop(RegisterPage(), context);
-                      },
-                      child: Text(
-                        "Inscription",
-                        style: GoogleFonts.openSans(
-                          fontSize: 20,
-                          color: activeDarkTheme ? dartColor : whiteColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ),

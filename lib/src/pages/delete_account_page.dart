@@ -1,11 +1,19 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tachkil/src/models/user_model.dart';
+import 'package:tachkil/src/pages/welcome_page.dart';
+import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
+import 'package:tachkil/src/utils/queries/users_queries.dart';
 
 class DeleteAccountPage extends StatefulWidget {
-  const DeleteAccountPage({super.key});
+  final UserModel userModel;
+  const DeleteAccountPage({super.key, required this.userModel});
 
   @override
   State<DeleteAccountPage> createState() => _DeleteAccountPageState();
@@ -81,7 +89,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                   child: TextFormField(
                     enableInteractiveSelection: false,
                     validator: (value) {
-                      if (value == null || value.isEmpty || value != "junior") {
+                      if (value == null ||
+                          value.isEmpty ||
+                          value != widget.userModel.username) {
                         return "Mauvais nom d'utilisateur";
                       }
                       return null;
@@ -98,7 +108,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                       fillColor: Colors.black12,
                       filled: true,
                       hint: Text(
-                        "Nom d'utilisateur",
+                        "Saisissez \"${widget.userModel.username}\"",
                         style: GoogleFonts.openSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
@@ -133,11 +143,42 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                       padding: EdgeInsets.all(12),
                       elevation: 0,
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         setState(() {
                           isLoading = true;
                         });
+
+                        UsersQueries userQueries = UsersQueries();
+                        int userId = widget.userModel.userId;
+
+                        try {
+                          await userQueries.delete(userId);
+
+                          SharedPreferences preferences =
+                              await SharedPreferences.getInstance();
+                          preferences.remove("isConnected");
+                          preferences.remove("userId");
+
+                          setState(() {
+                            isLoading = false;
+                          });
+
+                          navigatorRemplacementBottomToTop(
+                            WelcomePage(),
+                            context,
+                          );
+                        } catch (e) {
+                          setState(() {
+                            isLoading = false;
+                          });
+
+                          showMessage(
+                            context,
+                            "Une erreur est survenue lors de la suppression du compte",
+                            'e',
+                          );
+                        }
                       }
                     },
                     child: isLoading

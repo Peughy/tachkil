@@ -45,6 +45,21 @@ void navigatorBottomToTop(Widget page, BuildContext context) {
   );
 }
 
+void navigatorRemplacementBottomToTop(Widget page, BuildContext context) {
+  Navigator.pushReplacement(
+    context,
+    PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0, 1);
+        const end = Offset.zero;
+        final tween = Tween(begin: begin, end: end);
+        final offsetAnnimation = animation.drive(tween);
+        return SlideTransition(position: offsetAnnimation, child: child);
+      },
+    ),
+  );
+}
 /*
 
   code for message intention

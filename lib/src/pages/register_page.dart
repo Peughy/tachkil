@@ -368,7 +368,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         child: TextButton(
                           onPressed: () {
-                            navigatorBottomToTop(LoginPage(), context);
+                            navigatorRemplacementBottomToTop(LoginPage(), context);
                           },
                           child: Text(
                             "Connexion",
