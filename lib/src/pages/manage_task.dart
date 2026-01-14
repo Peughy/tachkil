@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -119,6 +121,46 @@ class _ManageTaskState extends State<ManageTask> {
                 color: activeDarkTheme ? whiteColor : dartColor,
               ),
             ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 18),
+                child: IconButton(
+                  style: IconButton.styleFrom(
+                    backgroundColor: activeDarkTheme
+                        ? Colors.white12
+                        : Colors.black12,
+                  ),
+                  onPressed: () async {
+                    TasksQueries tasksQueries = TasksQueries();
+
+                    // generate the random number
+                    Random rand = Random();
+                    int taskId = rand.nextInt(9999) + 1111;
+
+                    await tasksQueries.insert(
+                      widget.taskModel.copyWithTask(
+                        taskId: taskId,
+                        date: DateTime.now(),
+                        taskModel: widget.taskModel,
+                      ),
+                    );
+
+                    showMessage(
+                      context,
+                      "La tache a bien été ajouté pour aujourd'hui",
+                      's',
+                    );
+
+                    navigatorRemplacementBottomToTop(HomePage(), context);
+                  },
+                  icon: FaIcon(
+                    FontAwesomeIcons.calendarDay,
+                    size: 22,
+                    color: activeDarkTheme ? whiteColor : dartColor,
+                  ),
+                ),
+              ),
+            ],
           ),
           body: Stack(
             children: [

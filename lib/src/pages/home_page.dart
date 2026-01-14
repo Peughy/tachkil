@@ -174,9 +174,31 @@ class _HomePageState extends State<HomePage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return loadingWidget(activeDarkTheme);
                     }
-
+                    
                     if (snapshot.hasError || !snapshot.hasData) {
-                      return loadingWidget(activeDarkTheme);
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 48.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Image(
+                              image: AssetImage("assets/res/oups.png"),
+                              width: 100,
+                              height: 100,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              "Erreur...",
+                              style: GoogleFonts.openSans(
+                                fontSize: 17,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
 
                     List<TaskModel> tasksModels = snapshot.data!;

@@ -6,15 +6,20 @@ import 'package:tachkil/src/pages/welcome_page.dart';
 import 'package:tachkil/src/services/local_notifications_service.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
+import 'package:tachkil/src/utils/database_helper.dart';
 import 'package:tachkil/src/utils/notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await DatabaseHelper().getDBInstance();
+  
   await Permission.notification.isDenied.then((value) {
     if (value) {
       Permission.notification.request();
     }
   });
+
   runApp(const MyApp());
 }
 

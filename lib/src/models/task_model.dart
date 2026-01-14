@@ -1,4 +1,3 @@
-
 enum Priority { high, medium, low }
 
 class TaskModel {
@@ -22,6 +21,22 @@ class TaskModel {
     required this.userId,
   });
 
+  TaskModel copyWithTask({
+    required int taskId,
+    required DateTime date,
+    required TaskModel taskModel,
+  }) {
+    return TaskModel(
+      taskId: taskId,
+      title: taskModel.title,
+      description: taskModel.description,
+      color: taskModel.color,
+      priority: taskModel.priority,
+      statut: taskModel.statut,
+      date: date,
+      userId: taskModel.userId,
+    );
+  }
 
   // convert the TaskModel object in Map object
   Map<String, dynamic> toMap() {
@@ -36,7 +51,6 @@ class TaskModel {
       "userId": userId,
     };
   }
-
 
   int getPriorityNumber(Priority priority) {
     int numPriority;
