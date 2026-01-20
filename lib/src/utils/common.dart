@@ -29,6 +29,28 @@ String displayMonth(int month) {
   return months[month - 1];
 }
 
+String displayStringDate(DateTime date) {
+  String dateString;
+  if (date.year == DateTime.now().year &&
+      date.month == DateTime.now().month &&
+      date.day == DateTime.now().day) {
+    dateString = "Aujourd'hui";
+  } else if (date.year == DateTime.now().year &&
+      date.month == DateTime.now().month &&
+      date.day == DateTime.now().day - 1) {
+    dateString = "Hier";
+  } else if (date.year == DateTime.now().year &&
+      date.month == DateTime.now().month &&
+      date.day == DateTime.now().day + 1) {
+    dateString = "Demain";
+  } else {
+    dateString =
+        "${addZeros(date.day)} ${displayMonth(date.month)} ${date.year}";
+  }
+
+  return dateString;
+}
+
 void navigatorBottomToTop(Widget page, BuildContext context) {
   Navigator.push(
     context,

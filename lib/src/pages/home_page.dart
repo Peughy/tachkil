@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_holo_date_picker/date_picker.dart';
+import 'package:flutter_holo_date_picker/i18n/date_picker_i18n.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tachkil/src/models/action_button_model.dart';
@@ -27,7 +29,6 @@ late int userId;
 List<ActionButtonModel> actionButtonModels = [
   ActionButtonModel(text: "Toutes", isSelected: false, statut: null),
   ActionButtonModel(text: "En cours", isSelected: true, statut: 0),
-  // ActionButtonModel(text: "Retard", isSelected: false, statut: -1),
   ActionButtonModel(text: "Terminés", isSelected: false, statut: 1),
 ];
 
@@ -35,6 +36,8 @@ List<ActionButtonModel> actionButtonModels = [
 String filterTaskName = "";
 TextEditingController searchTaskController = TextEditingController();
 TasksQueries tasksQueries = TasksQueries();
+
+DateTime datefilter = DateTime.now();
 
 class _HomePageState extends State<HomePage> {
   @override
@@ -96,12 +99,64 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
 
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              navigatorBottomToTop(AddTaskPage(), context);
-            },
-            backgroundColor: mainColor,
-            child: FaIcon(FontAwesomeIcons.plus, size: 28, color: whiteColor),
+          floatingActionButton: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FloatingActionButton(
+                onPressed: () async {
+                  DateTime? datePicker = await DatePicker.showSimpleDatePicker(
+                    backgroundColor: activeDarkTheme ? dartColor : whiteColor,
+                    titleText: "Choisir une date",
+                    textColor: activeDarkTheme ? Colors.white : Colors.black,
+                    itemTextStyle: GoogleFonts.openSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: activeDarkTheme ? Colors.white : Colors.black,
+                    ),
+                    context,
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2090),
+                    dateFormat: "dd-MMMM-yyyy",
+                    locale: DateTimePickerLocale.fr,
+                    looping: true,
+                    confirmText: "Valider",
+                    cancelText: "Annuler",
+                    initialDate: datefilter,
+                  );
+
+                  setState(() {
+                    datefilter = datePicker ?? DateTime.now();
+                  });
+                },
+                backgroundColor: activeDarkTheme ? Colors.black : Colors.white,
+                child: FaIcon(
+                  FontAwesomeIcons.sliders,
+                  size: 28,
+                  color: activeDarkTheme ? Colors.white : Colors.black,
+                ),
+              ),
+              SizedBox(height: 12),
+              FloatingActionButton.extended(
+                onPressed: () {
+                  navigatorBottomToTop(AddTaskPage(), context);
+                },
+                label: Text(
+                  "Ajouter une tache",
+                  style: GoogleFonts.openSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: whiteColor,
+                  ),
+                ),
+                backgroundColor: mainColor,
+                icon: FaIcon(
+                  FontAwesomeIcons.plus,
+                  size: 24,
+                  color: whiteColor,
+                ),
+              ),
+            ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(24),
@@ -174,7 +229,7 @@ class _HomePageState extends State<HomePage> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return loadingWidget(activeDarkTheme);
                     }
-                    
+
                     if (snapshot.hasError || !snapshot.hasData) {
                       return Padding(
                         padding: const EdgeInsets.only(top: 48.0),
@@ -252,24 +307,72 @@ class _HomePageState extends State<HomePage> {
                               .toList()
                         : tasksModels;
 
-                    // Grouper les tâches par date
-                    Map<String, List<TaskModel>> groupedTasks = {};
-                    for (TaskModel task in taskModelsFiltered) {
-                      String dateKey =
-                          "${addZeros(task.date.day)} ${displayMonth(task.date.month)} ${task.date.year}";
-                      if (!groupedTasks.containsKey(dateKey)) {
-                        groupedTasks[dateKey] = [];
-                      }
-                      groupedTasks[dateKey]!.add(task);
+                    List<TaskModel> taskModelsDateFiltered = taskModelsFiltered
+                        .where(
+                          (TaskModel taskModel) =>
+                              taskModel.date.year == datefilter.year &&
+                              taskModel.date.month == datefilter.month &&
+                              taskModel.date.day == datefilter.day,
+                        )
+                        .toList();
+
+                    if (taskModelsDateFiltered.isEmpty) {
+                      return Column(
+                        spacing: 16,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            margin: EdgeInsets.only(bottom: 24),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 18,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              displayStringDate(datefilter),
+                              style: GoogleFonts.openSans(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 48.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
+                                Image(
+                                  image: AssetImage("assets/res/oups.png"),
+                                  width: 150,
+                                  height: 150,
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  "Aucune tache enregistrée le ${displayStringDate(datefilter)}",
+                                  style: GoogleFonts.openSans(
+                                    fontSize: 15,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
                     }
 
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: groupedTasks.length,
+                      itemCount: taskModelsDateFiltered.length,
                       itemBuilder: (context, dateIndex) {
-                        String dateKey = groupedTasks.keys.elementAt(dateIndex);
-                        List<TaskModel> tasksForDate = groupedTasks[dateKey]!;
+                        List<TaskModel> tasksForDate = taskModelsDateFiltered;
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +390,7 @@ class _HomePageState extends State<HomePage> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                dateKey,
+                                displayStringDate(datefilter),
                                 style: GoogleFonts.openSans(
                                   fontSize: 18,
                                   color: Colors.white,
@@ -316,7 +419,22 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                       ),
                                     )
-                                  : SizedBox.shrink();
+                                  : Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Center(
+                                        child: Text(
+                                          statutSelected == 0
+                                              ? "Pas de tache en cours"
+                                              : statutSelected == 1
+                                              ? "Pas de tache terminée"
+                                              : "Pas de tache",
+                                          style: GoogleFonts.openSans(
+                                            fontSize: 18,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ),
+                                    );
                             }),
                           ],
                         );

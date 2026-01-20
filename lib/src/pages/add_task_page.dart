@@ -49,6 +49,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Color selectedColor = Colors.blue;
   Priority selectedPriority = Priority.high;
 
+  // selected date for task
+  DateTime selectedDate = DateTime.now();
+
   bool isLoading = false;
   late int userId;
 
@@ -179,6 +182,49 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         ),
                       ),
                       SizedBox(height: 18),
+                      GestureDetector(
+                        onTap: () async {
+                          final pickedDate = await showDatePicker(
+                            cancelText: "Annuler",
+                            confirmText: "Valider",
+                            barrierLabel: "Choisir une date",
+                            fieldLabelText: "Choisir une date",
+                            context: context,
+                            currentDate: selectedDate,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(DateTime.now().year + 5),
+                          );
+
+                          setState(() {
+                            selectedDate = pickedDate ?? DateTime.now();
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 18,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                displayStringDate(selectedDate),
+                                style: GoogleFonts.openSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              FaIcon(FontAwesomeIcons.calendar, size: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 18),
                       Text(
                         "Priorité",
                         style: GoogleFonts.openSans(
@@ -252,6 +298,25 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               Colors.brown,
                               Colors.grey,
                               Colors.blueGrey,
+                              Colors.black,
+                              Colors.redAccent,
+                              Colors.orangeAccent,
+                              Colors.amberAccent,
+                              Colors.yellowAccent,
+                              Colors.limeAccent,
+                              Colors.greenAccent,
+                              Colors.lightGreenAccent,
+                              Colors.tealAccent,
+                              Colors.cyanAccent,
+                              Colors.blueAccent,
+                              Colors.lightBlueAccent,
+                              Colors.deepPurpleAccent,
+                              Colors.purpleAccent,
+                              Colors.pinkAccent,
+                              Colors.deepOrangeAccent,
+                              Colors.grey.shade200,
+                              Colors.grey.shade400,
+                              Colors.grey.shade800,
                             ].map((color) {
                               final isSelected = color == selectedColor;
                               return GestureDetector(
@@ -312,7 +377,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                     description: description,
                                     color: selectedColor.toARGB32(),
                                     priority: selectedPriority,
-                                    date: DateTime.now(),
+                                    date: selectedDate,
                                     statut: 0,
                                     userId: userId,
                                   ),
@@ -324,7 +389,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
                                   's',
                                 );
 
-                                navigatorRemplacementBottomToTop(HomePage(), context);
+                                navigatorRemplacementBottomToTop(
+                                  HomePage(),
+                                  context,
+                                );
                               } on DatabaseException catch (e) {
                                 if (e.toString().contains(
                                   "UNIQUE constraint failed",

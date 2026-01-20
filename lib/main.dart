@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/pages/welcome_page.dart';
-import 'package:tachkil/src/services/local_notifications_service.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/database_helper.dart';
@@ -11,15 +9,7 @@ import 'package:tachkil/src/utils/notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await DatabaseHelper().getDBInstance();
-  
-  await Permission.notification.isDenied.then((value) {
-    if (value) {
-      Permission.notification.request();
-    }
-  });
-
   runApp(const MyApp());
 }
 
@@ -43,12 +33,6 @@ class _MyAppState extends State<MyApp> {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool isDarkTheme = preferences.getBool("isDarkTheme") ?? false;
     return isDarkTheme;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    LocalNotificationsService.initialize();
   }
 
   // when the user want to clove the app we verified if reminder is active
