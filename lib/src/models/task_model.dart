@@ -32,7 +32,7 @@ class TaskModel {
       description: taskModel.description,
       color: taskModel.color,
       priority: taskModel.priority,
-      statut: taskModel.statut,
+      statut: 0,
       date: date,
       userId: taskModel.userId,
     );

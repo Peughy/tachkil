@@ -78,6 +78,23 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             actions: [
+              Row(
+                spacing: 12,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.all(8),
+                    onPressed: () {
+                      setState(() {
+                        datefilter = DateTime.now();
+                      });
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.black12,
+                    ),
+                    icon: FaIcon(FontAwesomeIcons.solidCalendar, size: 20),
+                  ),
+                ],
+              ),
               Padding(
                 padding: EdgeInsets.only(right: 24),
                 child: Row(
@@ -367,78 +384,52 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
 
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: taskModelsDateFiltered.length,
-                      itemBuilder: (context, dateIndex) {
-                        List<TaskModel> tasksForDate = taskModelsDateFiltered;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Section date
-                            Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin: EdgeInsets.only(bottom: 24),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 18,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                displayStringDate(datefilter),
-                                style: GoogleFonts.openSans(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section date
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.only(bottom: 24),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 18,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            displayStringDate(datefilter),
+                            style: GoogleFonts.openSans(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
-                            // Tâches pour cette date
-                            ...tasksForDate.map((taskModel) {
-                              return (statutSelected == null ||
-                                      statutSelected == taskModel.statut)
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 16,
-                                      ),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          navigatorBottomToTop(
-                                            ManageTask(taskModel: taskModel),
-                                            context,
-                                          );
-                                        },
-                                        child: TaskWidget(
-                                          activeDarkTheme: activeDarkTheme,
-                                          taskModel: taskModel,
-                                        ),
-                                      ),
-                                    )
-                                  : Padding(
-                                      padding: EdgeInsets.all(12),
-                                      child: Center(
-                                        child: Text(
-                                          statutSelected == 0
-                                              ? "Pas de tache en cours"
-                                              : statutSelected == 1
-                                              ? "Pas de tache terminée"
-                                              : "Pas de tache",
-                                          style: GoogleFonts.openSans(
-                                            fontSize: 18,
-                                            color: Colors.red,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                            }),
-                          ],
-                        );
-                      },
+                          ),
+                        ),
+                        // Tâches pour cette date
+                        ...taskModelsDateFiltered.map((taskModel) {
+                          return (statutSelected == null ||
+                                  statutSelected == taskModel.statut)
+                              ? Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      navigatorBottomToTop(
+                                        ManageTask(taskModel: taskModel),
+                                        context,
+                                      );
+                                    },
+                                    child: TaskWidget(
+                                      activeDarkTheme: activeDarkTheme,
+                                      taskModel: taskModel,
+                                    ),
+                                  ),
+                                )
+                              : SizedBox.shrink();
+                        }),
+                      ],
                     );
                   },
                 ),
