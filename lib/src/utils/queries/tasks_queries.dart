@@ -24,16 +24,15 @@ class TasksQueries {
 
   // add task
   Future<int> insert(TaskModel taskModel) async {
-    final bd = await _dbHelper.getDBInstance();
+    final bd = await _dbHelper.database;
 
     int rep = await bd.insert("tasks", taskModel.toMap());
-    _dbHelper.closeDb();
     return rep;
   }
 
   // display all tasks
   Future<List<TaskModel>> select(int userId) async {
-    final bd = await _dbHelper.getDBInstance();
+    final bd = await _dbHelper.database;
 
     List<Map<String, Object?>> taskMaps = await bd.query(
       "tasks",
@@ -57,14 +56,12 @@ class TasksQueries {
         ),
       );
     }
-
-    _dbHelper.closeDb();
     return taskModels;
   }
 
   // update task
   Future<int> update(TaskModel taskModel) async {
-    final bd = await _dbHelper.getDBInstance();
+    final bd = await _dbHelper.database;
 
     int rep = await bd.update(
       "tasks",
@@ -72,27 +69,23 @@ class TasksQueries {
       where: "taskId = ?",
       whereArgs: [taskModel.taskId],
     );
-
-    _dbHelper.closeDb();
     return rep;
   }
 
   // delete the task
   Future<int> delete(int taskId) async {
-    final db = await _dbHelper.getDBInstance();
+    final db = await _dbHelper.database;
 
     int rep = await db.delete(
       'tasks',
       where: "taskId = ?",
       whereArgs: [taskId],
     );
-
-    _dbHelper.closeDb();
     return rep;
   }
 
   Future<int> tooggleStatut(int taskId, int statut) async {
-    final db = await _dbHelper.getDBInstance();
+    final db = await _dbHelper.database;
 
     Map<String, Object?> values = {"statut": statut};
 
@@ -102,8 +95,6 @@ class TasksQueries {
       where: "taskId = ?",
       whereArgs: [taskId],
     );
-
-    _dbHelper.closeDb();
     return rep;
   }
 }

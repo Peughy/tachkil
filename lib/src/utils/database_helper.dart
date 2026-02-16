@@ -2,6 +2,23 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
+  // init instance
+  static DatabaseHelper? _instance;
+  static Database? _database;
+
+  // private constructor
+  DatabaseHelper._internal();
+
+  factory DatabaseHelper() {
+    _instance ??= DatabaseHelper._internal();
+    return _instance!;
+  }
+
+  Future<Database> get database async {
+    _database ??= await _initDb();
+    return _database!;
+  }
+
   final _dbName = "tachkil.db";
   final _dbVersion = 2;
 
@@ -13,6 +30,10 @@ class DatabaseHelper {
 
     await db.execute(
       "CREATE TABLE tasks(taskId INTEGER PRIMARY KEY, title TEXT, description TEXT NULL, color INTEGER, priority INTEGER, statut INTEGER DEFAULT 0, date TEXT, userId INTEGER, FOREIGN KEY(userId) REFERENCES users(userId) ON DELETE CASCADE)",
+    );
+
+    await db.execute(
+      "CREATE TABLE subtasks(subtaskId INTEGER PRIMARY KEY, title TEXT, substatut INTEGER DEFAULT 0,  taskId INTEGER, FOREIGN KEY(taskId) REFERENCES tasks(taskId) ON DELETE CASCADE)",
     );
 
     // await db.execute(
@@ -58,18 +79,9 @@ class DatabaseHelper {
     );
   }
 
-  // the method instance whiche init the instanec if is the first time
-  Database? _dbInstance;
-
-  Future<Database> getDBInstance() async {
-    // ??= is the operator who defined the _dbInstance value is _dbInstanec isn't null
-    // and init if is null
-    return _initDb();
-  }
-
   Future closeDb() async {
-    if (_dbInstance != null) {
-      await _dbInstance!.close();
+    if (_database != null) {
+      await _database!.close();
     }
   }
 }

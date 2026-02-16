@@ -34,10 +34,6 @@ class _TaskWidgetState extends State<TaskWidget> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: widget.activeDarkTheme ? Colors.black12 : Colors.white38,
-        border: Border.all(
-          color: leadingColor,
-          width: 1,
-        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.max,

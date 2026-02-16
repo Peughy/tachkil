@@ -56,10 +56,18 @@ class _AddTaskPageState extends State<AddTaskPage> {
   late int userId;
 
   final _formKey = GlobalKey<FormState>();
+  final _formSubKey = GlobalKey<FormState>();
+
+  late int taskId;
 
   @override
   void initState() {
     userId = userIdNotifier.value!;
+
+    // generate the random number
+    Random rand = Random();
+    taskId = rand.nextInt(9999) + 1111;
+
     super.initState();
   }
 
@@ -80,6 +88,150 @@ class _AddTaskPageState extends State<AddTaskPage> {
               },
               icon: FaIcon(FontAwesomeIcons.chevronLeft, size: 20),
             ),
+            actions: [
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: activeDarkTheme ? dartColor : whiteColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
+                        ),
+                        padding: EdgeInsets.all(24),
+                        width: MediaQuery.of(context).size.width,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(height: 16),
+                            Text(
+                              "Ajouter une sous tache",
+                              style: GoogleFonts.anton(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: activeDarkTheme
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                            SizedBox(height: 24),
+                            Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TextFormField(
+                                    maxLines: 2,
+                                    minLines: 1,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Veuillez ajouter un tache";
+                                      }
+                                      return null;
+                                    },
+                                    style: GoogleFonts.openSans(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    controller: titleController,
+                                    decoration: InputDecoration(
+                                      errorStyle: GoogleFonts.openSans(
+                                        color: Colors.red,
+                                        fontSize: 16,
+                                      ),
+                                      fillColor: Colors.black12,
+                                      filled: true,
+                                      hint: Text(
+                                        "Tache",
+                                        style: GoogleFonts.openSans(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                        borderSide: BorderSide(
+                                          color: Colors.red,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(height: 24),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: mainColor,
+                                        padding: EdgeInsets.all(12),
+                                        elevation: 0,
+                                      ),
+                                      onPressed: () {
+                                        if (_formSubKey.currentState!
+                                            .validate()) {
+                                          Navigator.pop(context);
+                                        }
+                                      },
+                                      child: Text(
+                                        "Ajouter",
+                                        style: GoogleFonts.openSans(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w700,
+                                          color: whiteColor,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 24),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 24),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: activeDarkTheme ? Colors.white12 : Colors.black12,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(FontAwesomeIcons.plus, size: 16),
+                        SizedBox(width: 8),
+                        Text(
+                          "Sous Tâche",
+                          style: GoogleFonts.openSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
 
           body: Padding(
@@ -96,7 +248,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
                 SizedBox(height: 24),
                 Form(
-                  key: _formKey,
+                  key: _formSubKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -105,7 +257,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         minLines: 2,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return "Veuillez ajouter un titre";
+                            return "Veuillez un titre";
                           }
                           return null;
                         },
@@ -364,10 +516,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               String? description = descriptionController.text;
 
                               TasksQueries tasksQueries = TasksQueries();
-
-                              // generate the random number
-                              Random rand = Random();
-                              int taskId = rand.nextInt(9999) + 1111;
 
                               try {
                                 await tasksQueries.insert(

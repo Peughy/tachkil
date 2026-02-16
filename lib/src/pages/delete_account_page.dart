@@ -46,7 +46,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
             ),
           ),
           body: Padding(
-            padding: EdgeInsetsGeometry.all(24),
+            padding: EdgeInsets.all(24),
             child: ListView(
               children: [
                 Text(

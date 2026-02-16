@@ -4,12 +4,10 @@ import 'package:tachkil/src/pages/home_page.dart';
 import 'package:tachkil/src/pages/welcome_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
-import 'package:tachkil/src/utils/database_helper.dart';
 import 'package:tachkil/src/utils/notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DatabaseHelper().getDBInstance();
   runApp(const MyApp());
 }
 
@@ -21,73 +19,53 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // get the connected statut stock with the sharedPreference
-  Future<bool> getIfConnected() async {
+  bool _isLoading = true;
+  bool _activeDarkTheme = false;
+  bool _isConnected = false;
+  int? _userId;
+
+  // Loading and initialize data
+  void _loadAppData() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     bool isConnected = preferences.getBool("isConnected") ?? false;
-    return isConnected;
+    bool activeDarkTheme = preferences.getBool("isDarkTheme") ?? false;
+    int? id = await getUserId();
+
+    setState(() {
+      _isConnected = isConnected;
+      _activeDarkTheme = activeDarkTheme;
+      _userId = id;
+      _isLoading = false;
+    });
+
+    // Update the global notifier
+    activeDarkThemeNotifier.value = _activeDarkTheme;
+    userIdNotifier.value = _userId;
   }
 
-  // get theme mode stock with the sharedPreference
-  Future<bool> getTheme() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    bool isDarkTheme = preferences.getBool("isDarkTheme") ?? false;
-    return isDarkTheme;
-  }
-
-  // when the user want to clove the app we verified if reminder is active
-  // if reminder is active -> do nothing
-  // else if reminder isn't active -> delete the id user ansd log information
   @override
-  void dispose() async {
-    super.dispose();
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    bool activeReminder = preferences.getBool("isReminder") ?? false;
-
-    if (activeReminder == false) {
-      preferences.remove("isConnected");
-      preferences.remove("userId");
-    }
+  void initState() {
+    _loadAppData();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: getTheme(),
-      builder: (context, snapshot) {
-        bool activeDarkTheme = snapshot.data ?? false;
-        activeDarkThemeNotifier.value = activeDarkTheme;
-        return FutureBuilder(
-          future: getIfConnected(),
-          builder: (context, snapshot) {
-            bool isConnected = snapshot.data ?? false;
+    if (_isLoading) {
+      return loadingWidget(false);
+    }
 
-            return FutureBuilder(
-              future: getUserId(),
-              builder: (context, snapshot) {
-                int? userId = snapshot.data;
-                if (userId != null) {
-                  userIdNotifier.value = userId;
-                }
-                return ValueListenableBuilder(
-                  valueListenable: activeDarkThemeNotifier,
-                  builder: (context, activeDark, child) {
-                    return MaterialApp(
-                      title: 'tachKil',
-                      debugShowCheckedModeBanner: false,
-                      theme: ThemeData(
-                        brightness: activeDark
-                            ? Brightness.dark
-                            : Brightness.light,
-                        primaryColor: mainColor,
-                      ),
-                      home: isConnected ? HomePage() : WelcomePage(),
-                    );
-                  },
-                );
-              },
-            );
-          },
+    return ValueListenableBuilder(
+      valueListenable: activeDarkThemeNotifier,
+      builder: (context, activeDark, child) {
+        return MaterialApp(
+          title: 'tachKil',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            brightness: activeDark ? Brightness.dark : Brightness.light,
+            primaryColor: mainColor,
+          ),
+          home: _isConnected ? HomePage() : WelcomePage(),
         );
       },
     );

@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_holo_date_picker/date_picker.dart';
-import 'package:flutter_holo_date_picker/i18n/date_picker_i18n.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tachkil/src/models/action_button_model.dart';
-import 'package:tachkil/src/models/task_model.dart';
 import 'package:tachkil/src/pages/account_page.dart';
 import 'package:tachkil/src/pages/add_task_page.dart';
-import 'package:tachkil/src/pages/manage_task.dart';
+import 'package:tachkil/src/pages/tasks_page.dart';
 import 'package:tachkil/src/utils/common.dart';
 import 'package:tachkil/src/utils/constant.dart';
 import 'package:tachkil/src/utils/notifier.dart';
-import 'package:tachkil/src/utils/queries/tasks_queries.dart';
-import 'package:tachkil/src/widgets/action_button_widget.dart';
-import 'package:tachkil/src/widgets/task_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,19 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 // this param is used for filter the task statut
-int? statutSelected;
+int tabSelectedIndex = 1;
 late int userId;
-
-List<ActionButtonModel> actionButtonModels = [
-  ActionButtonModel(text: "Toutes", isSelected: false, statut: null),
-  ActionButtonModel(text: "En cours", isSelected: true, statut: 0),
-  ActionButtonModel(text: "Terminés", isSelected: false, statut: 1),
-];
-
-// this variable is used for filter the task with the search bar
-String filterTaskName = "";
-TextEditingController searchTaskController = TextEditingController();
-TasksQueries tasksQueries = TasksQueries();
 
 DateTime datefilter = DateTime.now();
 
@@ -78,23 +60,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             actions: [
-              Row(
-                spacing: 12,
-                children: [
-                  IconButton(
-                    padding: EdgeInsets.all(8),
-                    onPressed: () {
-                      setState(() {
-                        datefilter = DateTime.now();
-                      });
-                    },
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.black12,
-                    ),
-                    icon: FaIcon(FontAwesomeIcons.solidCalendar, size: 20),
-                  ),
-                ],
-              ),
               Padding(
                 padding: EdgeInsets.only(right: 24),
                 child: Row(
@@ -115,327 +80,512 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
+          floatingActionButton: tabSelectedIndex == 1
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    FloatingActionButton(
+                      onPressed: () async {
+                        DateTime tempDate = datefilter;
 
-          floatingActionButton: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FloatingActionButton(
-                onPressed: () async {
-                  DateTime? datePicker = await DatePicker.showSimpleDatePicker(
-                    backgroundColor: activeDarkTheme ? dartColor : whiteColor,
-                    titleText: "Choisir une date",
-                    textColor: activeDarkTheme ? Colors.white : Colors.black,
-                    itemTextStyle: GoogleFonts.openSans(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: activeDarkTheme ? Colors.white : Colors.black,
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return StatefulBuilder(
+                              builder: (context, setDialogState) {
+                                return AlertDialog(
+                                  title: Text(
+                                    'Filtrer les tâches',
+                                    style: GoogleFonts.anton(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(height: 14),
+                                        // Quick select buttons (Hier, Aujourd'hui, Demain)
+                                        Wrap(
+                                          spacing: 10,
+                                          runSpacing: 10,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  datefilter = DateTime.now()
+                                                      .subtract(
+                                                        Duration(days: 1),
+                                                      );
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: activeDarkTheme
+                                                      ? Colors.black54
+                                                      : Colors.white54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  'Hier',
+                                                  style: GoogleFonts.openSans(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  datefilter = DateTime.now();
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: activeDarkTheme
+                                                      ? Colors.black54
+                                                      : Colors.white54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+
+                                                child: Text(
+                                                  'Aujourd\'hui',
+                                                  style: GoogleFonts.openSans(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  datefilter = DateTime.now()
+                                                      .add(Duration(days: 1));
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 10,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: activeDarkTheme
+                                                      ? Colors.black54
+                                                      : Colors.white54,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+
+                                                child: Text(
+                                                  'Demain',
+                                                  style: GoogleFonts.openSans(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 32),
+                                        Text(
+                                          'Ou choisissez une date specifique.',
+                                          style: GoogleFonts.openSans(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        SizedBox(height: 20),
+                                        // Date picker with scrollable day, month, year
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            // Day Picker
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    'Jour',
+                                                    style: GoogleFonts.openSans(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Container(
+                                                    height: 60,
+                                                    width: 60,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        color: Colors.grey,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: ListWheelScrollView.useDelegate(
+                                                      onSelectedItemChanged:
+                                                          (index) {
+                                                            setDialogState(() {
+                                                              tempDate =
+                                                                  DateTime(
+                                                                    tempDate
+                                                                        .year,
+                                                                    tempDate
+                                                                        .month,
+                                                                    index + 1,
+                                                                  );
+                                                            });
+                                                          },
+                                                      itemExtent: 50,
+                                                      childDelegate: ListWheelChildBuilderDelegate(
+                                                        builder: (context, index) {
+                                                          index =
+                                                              tempDate.day - 1;
+                                                          if (index > 30) {
+                                                            return null;
+                                                          }
+                                                          return Center(
+                                                            child: Text(
+                                                              (index + 1)
+                                                                  .toString()
+                                                                  .padLeft(
+                                                                    2,
+                                                                    '0',
+                                                                  ),
+                                                              style: GoogleFonts.openSans(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        childCount: 31,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(width: 8),
+                                            // Month Picker
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    'Mois',
+                                                    style: GoogleFonts.openSans(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Container(
+                                                    height: 60,
+                                                    width: 60,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        color: Colors.grey,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: ListWheelScrollView.useDelegate(
+                                                      onSelectedItemChanged:
+                                                          (index) {
+                                                            setDialogState(() {
+                                                              tempDate =
+                                                                  DateTime(
+                                                                    tempDate
+                                                                        .year,
+                                                                    index + 1,
+                                                                    tempDate
+                                                                        .day,
+                                                                  );
+                                                            });
+                                                          },
+                                                      itemExtent: 50,
+                                                      childDelegate: ListWheelChildBuilderDelegate(
+                                                        builder: (context, index) {
+                                                          index =
+                                                              tempDate.month -
+                                                              1;
+                                                          if (index > 11) {
+                                                            return null;
+                                                          }
+                                                          return Center(
+                                                            child: Text(
+                                                              displayMonth(
+                                                                index + 1,
+                                                              ),
+                                                              style: GoogleFonts.openSans(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        childCount: 12,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(width: 8),
+                                            // Year Picker
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    'Année',
+                                                    style: GoogleFonts.openSans(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Container(
+                                                    height: 60,
+                                                    width: 60,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        color: Colors.grey,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: ListWheelScrollView.useDelegate(
+                                                      onSelectedItemChanged:
+                                                          (index) {
+                                                            setDialogState(() {
+                                                              tempDate =
+                                                                  DateTime(
+                                                                    1900 +
+                                                                        index,
+                                                                    tempDate
+                                                                        .month,
+                                                                    tempDate
+                                                                        .day,
+                                                                  );
+                                                            });
+                                                          },
+                                                      itemExtent: 50,
+                                                      childDelegate: ListWheelChildBuilderDelegate(
+                                                        builder: (context, index) {
+                                                          index =
+                                                              tempDate.year -
+                                                              1900;
+
+                                                          return Center(
+                                                            child: Text(
+                                                              (1900 + index)
+                                                                  .toString(),
+                                                              style: GoogleFonts.openSans(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        childCount: 200,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 32),
+                                        // Action buttons
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          spacing: 12,
+                                          children: [
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                backgroundColor: Colors.black,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'Supprimer',
+                                                style: GoogleFonts.openSans(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  datefilter = DateTime.now();
+                                                });
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                backgroundColor: mainColor,
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 8,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                'Valider',
+                                                style: GoogleFonts.openSans(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  datefilter = tempDate;
+                                                });
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                      backgroundColor: activeDarkTheme
+                          ? Colors.black
+                          : Colors.white,
+                      child: FaIcon(
+                        FontAwesomeIcons.sliders,
+                        size: 22,
+                        color: activeDarkTheme ? Colors.white : Colors.black,
+                      ),
                     ),
-                    context,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2090),
-                    dateFormat: "dd-MMMM-yyyy",
-                    locale: DateTimePickerLocale.fr,
-                    looping: true,
-                    confirmText: "Valider",
-                    cancelText: "Annuler",
-                    initialDate: datefilter,
-                  );
-
-                  setState(() {
-                    datefilter = datePicker ?? DateTime.now();
-                  });
-                },
-                backgroundColor: activeDarkTheme ? Colors.black : Colors.white,
-                child: FaIcon(
-                  FontAwesomeIcons.sliders,
-                  size: 28,
-                  color: activeDarkTheme ? Colors.white : Colors.black,
-                ),
-              ),
-              SizedBox(height: 12),
-              FloatingActionButton.extended(
-                onPressed: () {
-                  navigatorBottomToTop(AddTaskPage(), context);
-                },
-                label: Text(
-                  "Ajouter une tache",
-                  style: GoogleFonts.openSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: whiteColor,
-                  ),
-                ),
-                backgroundColor: mainColor,
-                icon: FaIcon(
-                  FontAwesomeIcons.plus,
-                  size: 24,
+                    SizedBox(height: 12),
+                    FloatingActionButton.extended(
+                      onPressed: () {
+                        navigatorBottomToTop(AddTaskPage(), context);
+                      },
+                      label: Text(
+                        "Ajouter une tache",
+                        style: GoogleFonts.openSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: whiteColor,
+                        ),
+                      ),
+                      backgroundColor: mainColor,
+                      icon: FaIcon(
+                        FontAwesomeIcons.plus,
+                        size: 18,
+                        color: whiteColor,
+                      ),
+                    ),
+                  ],
+                )
+              : null,
+          bottomNavigationBar: NavigationBar(
+            onDestinationSelected: (int index) {
+              setState(() {
+                tabSelectedIndex = index;
+              });
+            },
+            backgroundColor: activeDarkTheme ? Colors.black26 : Colors.white24,
+            elevation: 12,
+            indicatorColor: mainColor,
+            surfaceTintColor: Colors.transparent,
+            selectedIndex: tabSelectedIndex,
+            labelTextStyle: WidgetStatePropertyAll(
+              GoogleFonts.openSans(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            destinations: [
+              NavigationDestination(
+                selectedIcon: FaIcon(
+                  FontAwesomeIcons.bullseye,
                   color: whiteColor,
                 ),
+                icon: FaIcon(FontAwesomeIcons.bullseye),
+                label: "Objectifs",
+              ),
+              NavigationDestination(
+                selectedIcon: FaIcon(
+                  FontAwesomeIcons.listCheck,
+                  color: whiteColor,
+                ),
+                icon: FaIcon(FontAwesomeIcons.listCheck),
+                label: "Tâches",
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(24),
-            child: ListView(
-              children: [
-                TextFormField(
-                  onChanged: (value) {
-                    setState(() {
-                      filterTaskName = value;
-                    });
-                  },
-                  controller: searchTaskController,
-                  style: GoogleFonts.openSans(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                    fillColor: Colors.black12,
-                    filled: true,
-                    hint: Text(
-                      "Recherchez une tache",
-                      style: GoogleFonts.openSans(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+          body: <Widget>[
+            // GoalsPage(activeDarkTheme: activeDarkTheme),
+            Center(
+              child: Text(
+                "Page des objectifs en cours de développement...",
+                style: GoogleFonts.openSans(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: activeDarkTheme ? Colors.white : dartColor,
                 ),
-                SizedBox(height: 24),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: List.generate(actionButtonModels.length, (index) {
-                      return Padding(
-                        padding: EdgeInsetsGeometry.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              for (ActionButtonModel actionButtonModel
-                                  in actionButtonModels) {
-                                actionButtonModel.isSelected = false;
-                              }
-
-                              actionButtonModels[index].isSelected = true;
-                              statutSelected = actionButtonModels[index].statut;
-                            });
-                          },
-                          child: ActionButtonWidget(
-                            actionButtonModel: actionButtonModels[index],
-                            activeDarkTheme: activeDarkTheme,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-                SizedBox(height: 42),
-                FutureBuilder(
-                  future: tasksQueries.select(userId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return loadingWidget(activeDarkTheme);
-                    }
-
-                    if (snapshot.hasError || !snapshot.hasData) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 48.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Image(
-                              image: AssetImage("assets/res/oups.png"),
-                              width: 100,
-                              height: 100,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              "Erreur...",
-                              style: GoogleFonts.openSans(
-                                fontSize: 17,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    List<TaskModel> tasksModels = snapshot.data!;
-
-                    if (tasksModels.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 48.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Image(
-                              image: AssetImage("assets/res/oups.png"),
-                              width: 100,
-                              height: 100,
-                            ),
-                            SizedBox(height: 12),
-                            Text(
-                              "Oops! Aucune de tache...",
-                              style: GoogleFonts.openSans(
-                                fontSize: 17,
-                                color: Colors.red,
-                              ),
-                            ),
-                            SizedBox(height: 18),
-                            GestureDetector(
-                              onTap: () {
-                                navigatorBottomToTop(AddTaskPage(), context);
-                              },
-                              child: Text(
-                                "Ajouter une tache",
-                                style: GoogleFonts.openSans(
-                                  fontSize: 17,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    List<TaskModel> taskModelsFiltered = (filterTaskName != "")
-                        ? tasksModels
-                              .where(
-                                (TaskModel taskModel) => taskModel.title
-                                    .toLowerCase()
-                                    .contains(filterTaskName.toLowerCase()),
-                              )
-                              .toList()
-                        : tasksModels;
-
-                    List<TaskModel> taskModelsDateFiltered = taskModelsFiltered
-                        .where(
-                          (TaskModel taskModel) =>
-                              taskModel.date.year == datefilter.year &&
-                              taskModel.date.month == datefilter.month &&
-                              taskModel.date.day == datefilter.day,
-                        )
-                        .toList();
-
-                    if (taskModelsDateFiltered.isEmpty) {
-                      return Column(
-                        spacing: 16,
-                        children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width,
-                            margin: EdgeInsets.only(bottom: 24),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 18,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              displayStringDate(datefilter),
-                              style: GoogleFonts.openSans(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 48.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Image(
-                                  image: AssetImage("assets/res/oups.png"),
-                                  width: 150,
-                                  height: 150,
-                                ),
-                                SizedBox(height: 12),
-                                Text(
-                                  "Aucune tache enregistrée le ${displayStringDate(datefilter)}",
-                                  style: GoogleFonts.openSans(
-                                    fontSize: 15,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section date
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.only(bottom: 24),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 18,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            displayStringDate(datefilter),
-                            style: GoogleFonts.openSans(
-                              fontSize: 18,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        // Tâches pour cette date
-                        ...taskModelsDateFiltered.map((taskModel) {
-                          return (statutSelected == null ||
-                                  statutSelected == taskModel.statut)
-                              ? Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      navigatorBottomToTop(
-                                        ManageTask(taskModel: taskModel),
-                                        context,
-                                      );
-                                    },
-                                    child: TaskWidget(
-                                      activeDarkTheme: activeDarkTheme,
-                                      taskModel: taskModel,
-                                    ),
-                                  ),
-                                )
-                              : SizedBox.shrink();
-                        }),
-                      ],
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
+            TasksPage(activeDarkTheme: activeDarkTheme),
+          ][tabSelectedIndex],
         );
       },
     );
